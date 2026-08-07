@@ -1,0 +1,124 @@
+.molten-container{
+
+    position:absolute;
+
+    inset:0;
+
+    overflow:hidden;
+
+    background:
+    radial-gradient(
+        circle at 30% 30%,
+        #ffffff,
+        #8d8d8d 20%,
+        #111 60%
+    );
+
+   z-index:0;
+
+}
+
+
+.metal{
+
+    position:absolute;
+
+    border-radius:50%;
+
+    filter:blur(80px);
+
+    opacity:.8;
+
+    animation: moveMetal 12s infinite alternate ease-in-out;
+
+}
+
+
+.metal-one{
+
+    width:500px;
+    height:500px;
+
+    background:
+    radial-gradient(
+        circle,
+        #ffffff,
+        #aaa,
+        transparent
+    );
+
+    top:-100px;
+    left:-100px;
+
+}
+
+
+
+.metal-two{
+
+    width:600px;
+    height:600px;
+
+    background:
+    radial-gradient(
+        circle,
+        #FFD700,
+        #b8860b,
+        transparent
+    );
+
+
+    right:-200px;
+    bottom:-200px;
+
+    animation-duration:16s;
+
+}
+
+
+
+.metal-three{
+
+    width:400px;
+    height:400px;
+
+    background:
+    radial-gradient(
+        circle,
+        #eeeeee,
+        #555,
+        transparent
+    );
+
+
+    left:40%;
+    top:30%;
+
+    animation-duration:20s;
+
+}
+
+
+
+
+@keyframes moveMetal{
+
+
+    from{
+
+        transform:
+        translate(0,0)
+        scale(1);
+
+    }
+
+
+    to{
+
+        transform:
+        translate(80px,-60px)
+        scale(1.2);
+
+    }
+
+}

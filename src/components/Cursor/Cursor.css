@@ -1,0 +1,44 @@
+.cursor{
+
+position:fixed;
+
+width:25px;
+
+height:25px;
+
+border-radius:50%;
+
+background:#FFD700;
+
+pointer-events:none;
+
+z-index:99999;
+
+transform:
+translate(-50%,-50%);
+
+mix-blend-mode:screen;
+
+
+box-shadow:
+
+0 0 20px #FFD700,
+0 0 50px #FFD700;
+
+
+transition:
+
+transform .15s ease;
+
+}
+
+
+@media(max-width:900px){
+
+.cursor{
+
+display:none;
+
+}
+
+}

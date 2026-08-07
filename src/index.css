@@ -1,0 +1,62 @@
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+
+  background:#050505;
+
+  font-family:
+  Arial, Helvetica, sans-serif;
+
+  color:white;
+
+  overflow-x:hidden;
+}
+
+main{
+
+  min-height:100vh;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+}
+
+
+.teka-title{
+
+  font-size:120px;
+
+  letter-spacing:25px;
+
+  font-weight:900;
+
+}
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+
+html,body,#root{
+
+    width:100%;
+    min-height:100%;
+
+    overflow-x:hidden;
+
+}
+
+
+body{
+
+    background:#050505;
+
+}
