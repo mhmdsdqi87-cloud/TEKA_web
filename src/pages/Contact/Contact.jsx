@@ -117,7 +117,7 @@ Open Telegram →
 
 
 <a
-href="https://x.com/TEKAOfficial"
+href="https://x.com/TEKAweb3"
 target="_blank"
 rel="noreferrer"
 className="contact-card"
@@ -176,7 +176,7 @@ Telegram
 
 
 <a
-href="https://x.com/TEKAOfficial"
+href="https://x.com/TEKAweb3"
 target="_blank"
 rel="noreferrer"
 >

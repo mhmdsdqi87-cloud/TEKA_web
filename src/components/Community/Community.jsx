@@ -96,7 +96,7 @@ Join Now →
 
 
 <a
-href="https://x.com/TEKAOfficial"
+href="https://x.com/TEKAweb3"
 target="_blank"
 rel="noreferrer"
 className="community-card"
