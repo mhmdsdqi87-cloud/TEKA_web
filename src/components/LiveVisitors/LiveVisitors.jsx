@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./LiveVisitors.css";
 
-const API_URL = "http://127.0.0.1:5000";
+const API_URL = "https://teka-web-beta.vercel.app/api";
 
 function LiveVisitors() {
   const [visitors, setVisitors] = useState(0);
@@ -13,68 +13,111 @@ function LiveVisitors() {
     if (!visitorId) {
       visitorId =
         crypto.randomUUID?.() ||
-        `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+        `${Date.now()}-${Math.random()
+          .toString(36)
+          .slice(2)}`;
 
-      localStorage.setItem("teka_visitor_id", visitorId);
+      localStorage.setItem(
+        "teka_visitor_id",
+        visitorId
+      );
     }
 
     const sendHeartbeat = async () => {
       try {
-        await fetch(`${API_URL}/api/presence`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            visitor_id: visitorId,
-          }),
-        });
+        const response = await fetch(
+          `${API_URL}/presence`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              visitor_id: visitorId,
+            }),
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Heartbeat failed");
+        }
 
         setOnline(true);
-      } catch {
+      } catch (error) {
+        console.error(
+          "TEKA Presence:",
+          error
+        );
+
         setOnline(false);
       }
     };
 
     const getVisitors = async () => {
       try {
-        const response = await fetch(`${API_URL}/api/presence`);
+        const response = await fetch(
+          `${API_URL}/presence`,
+          {
+            cache: "no-store",
+          }
+        );
 
         if (!response.ok) {
-          throw new Error("Failed to fetch visitors");
+          throw new Error(
+            "Failed to fetch visitors"
+          );
         }
 
-        const data = await response.json();
+        const data =
+          await response.json();
 
-        setVisitors(data.displayed_users);
+        setVisitors(
+          Number(data.displayed_users) || 0
+        );
+
         setOnline(true);
-      } catch {
+      } catch (error) {
+        console.error(
+          "TEKA Visitors:",
+          error
+        );
+
         setOnline(false);
       }
     };
 
-    const update = async () => {
+    const updatePresence = async () => {
       await sendHeartbeat();
       await getVisitors();
     };
 
-    update();
+    updatePresence();
 
-    const interval = setInterval(update, 10000);
+    const interval = setInterval(
+      updatePresence,
+      10000
+    );
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+    };
   }, []);
 
   return (
     <div className="live-visitors">
+
       <div className="live-status">
+
         <span
-          className={`live-dot ${online ? "online" : ""}`}
-        ></span>
+          className={`live-dot ${
+            online ? "online" : ""
+          }`}
+        />
 
         <span>
           {online ? "LIVE" : "OFFLINE"}
         </span>
+
       </div>
 
       <div className="live-number">
@@ -84,6 +127,7 @@ function LiveVisitors() {
       <div className="live-label">
         People exploring TEKA
       </div>
+
     </div>
   );
 }
