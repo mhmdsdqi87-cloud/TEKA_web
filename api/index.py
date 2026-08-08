@@ -1,27 +1,13 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from datetime import datetime, timedelta
-from threading import Lock
 from collections import defaultdict
 import requests
 import time
-import os
 
 
 app = Flask(__name__)
-
-# =========================================================
-# CORS
-# =========================================================
-
-CORS(
-    app,
-    resources={
-        r"/api/*": {
-            "origins": "*"
-        }
-    }
-)
+CORS(app)
 
 
 # =========================================================
@@ -30,11 +16,7 @@ CORS(
 
 active_visitors = {}
 
-visitor_lock = Lock()
-
 TIMEOUT_SECONDS = 30
-
-# Display multiplier
 DISPLAY_MULTIPLIER = 6
 
 
@@ -52,10 +34,6 @@ COINS = {
 }
 
 
-# =========================================================
-# MARKET CACHE
-# =========================================================
-
 market_cache = {
     "data": None,
     "timestamp": 0,
@@ -63,33 +41,30 @@ market_cache = {
 
 MARKET_CACHE_SECONDS = 15
 
-
-# =========================================================
-# PRICE HISTORY
-# =========================================================
-
 price_history = defaultdict(list)
 
 MAX_HISTORY_POINTS = 40
 
 
 # =========================================================
-# HEALTH
+# ROOT
 # =========================================================
 
 @app.get("/")
 def home():
-
     return jsonify({
         "service": "TEKA Backend",
         "status": "online",
-        "version": "1.0.0",
+        "platform": "Vercel",
     })
 
 
+# =========================================================
+# HEALTH
+# =========================================================
+
 @app.get("/api/health")
 def health():
-
     return jsonify({
         "service": "TEKA Backend",
         "status": "online",
@@ -102,7 +77,7 @@ def health():
 
 
 # =========================================================
-# LIVE VISITORS — HEARTBEAT
+# LIVE VISITORS - HEARTBEAT
 # =========================================================
 
 @app.post("/api/presence")
@@ -113,17 +88,12 @@ def heartbeat():
     visitor_id = data.get("visitor_id")
 
     if not visitor_id:
-
         return jsonify({
             "success": False,
             "error": "visitor_id is required",
         }), 400
 
-
-    with visitor_lock:
-
-        active_visitors[visitor_id] = datetime.utcnow()
-
+    active_visitors[visitor_id] = datetime.utcnow()
 
     return jsonify({
         "success": True,
@@ -132,7 +102,7 @@ def heartbeat():
 
 
 # =========================================================
-# LIVE VISITORS — GET
+# LIVE VISITORS
 # =========================================================
 
 @app.get("/api/presence")
@@ -140,61 +110,39 @@ def get_presence():
 
     now = datetime.utcnow()
 
+    expired = [
+        visitor_id
+        for visitor_id, last_seen
+        in active_visitors.items()
+        if now - last_seen
+        > timedelta(seconds=TIMEOUT_SECONDS)
+    ]
 
-    with visitor_lock:
+    for visitor_id in expired:
+        del active_visitors[visitor_id]
 
-        expired_visitors = [
-
-            visitor_id
-
-            for visitor_id, last_seen
-            in active_visitors.items()
-
-            if now - last_seen >
-            timedelta(
-                seconds=TIMEOUT_SECONDS
-            )
-
-        ]
-
-
-        for visitor_id in expired_visitors:
-
-            del active_visitors[visitor_id]
-
-
-        real_users = len(active_visitors)
-
+    real_users = len(active_visitors)
 
     displayed_users = (
         real_users * DISPLAY_MULTIPLIER
     )
 
-
     return jsonify({
-
         "real_users": real_users,
-
-        "displayed_users":
-            displayed_users,
-
+        "displayed_users": displayed_users,
         "status": "live",
-
-        "updated_at":
-            datetime.utcnow().isoformat(),
-
+        "updated_at": datetime.utcnow().isoformat(),
     })
 
 
 # =========================================================
-# MARKET DATA
+# MARKET
 # =========================================================
 
 @app.get("/api/market")
 def market():
 
     now = time.time()
-
 
     # -----------------------------------------------------
     # CACHE
@@ -206,18 +154,15 @@ def market():
         now - market_cache["timestamp"]
         < MARKET_CACHE_SECONDS
     ):
-
         return jsonify(
             market_cache["data"]
         )
-
 
     try:
 
         coin_ids = ",".join(
             COINS.values()
         )
-
 
         url = (
             "https://api.coingecko.com/api/v3/simple/price"
@@ -227,30 +172,20 @@ def market():
             "&include_24hr_vol=true"
         )
 
-
         response = requests.get(
-
             url,
-
             timeout=10,
-
             headers={
                 "Accept": "application/json",
-                "User-Agent":
-                    "TEKA-Backend/1.0",
+                "User-Agent": "TEKA-Backend/1.0",
             },
-
         )
-
 
         response.raise_for_status()
 
-
         raw_data = response.json()
 
-
         result = []
-
 
         # -------------------------------------------------
         # BUILD MARKET DATA
@@ -258,94 +193,60 @@ def market():
 
         for symbol, coin_id in COINS.items():
 
-            coin = raw_data.get(
-                coin_id
-            )
-
+            coin = raw_data.get(coin_id)
 
             if not coin:
-
                 continue
-
 
             price = coin.get(
                 "usd",
                 0
             )
 
-
             change = coin.get(
                 "usd_24h_change",
                 0
             )
-
 
             volume = coin.get(
                 "usd_24h_vol",
                 0
             )
 
-
             # ---------------------------------------------
             # PRICE HISTORY
             # ---------------------------------------------
 
             price_history[symbol].append({
-
-                "time": int(
-                    time.time()
-                ),
-
+                "time": int(time.time()),
                 "price": price,
-
             })
 
-
             if (
-                len(
-                    price_history[symbol]
-                )
-                >
-                MAX_HISTORY_POINTS
+                len(price_history[symbol])
+                > MAX_HISTORY_POINTS
             ):
-
                 price_history[symbol] = (
                     price_history[symbol]
                     [-MAX_HISTORY_POINTS:]
                 )
 
-
             result.append({
-
-                "symbol":
-                    symbol,
-
-                "price":
-                    price,
-
-                "change":
-                    change,
-
-                "volume":
-                    volume,
-
-                "history":
-                    price_history[symbol],
-
+                "symbol": symbol,
+                "price": price,
+                "change": change,
+                "volume": volume,
+                "history": price_history[symbol],
             })
 
-
         # -------------------------------------------------
-        # SAVE CACHE
+        # CACHE
         # -------------------------------------------------
 
         market_cache["data"] = result
-
         market_cache["timestamp"] = now
 
-
         return jsonify(result)
-
 
     except Exception as error:
 
@@ -353,7 +254,6 @@ def market():
             "Market API error:",
             error
         )
-
 
         # -------------------------------------------------
         # FALLBACK
@@ -365,35 +265,20 @@ def market():
                 market_cache["data"]
             )
 
-
         return jsonify({
-
             "error":
                 "Market data temporarily unavailable",
-
         }), 503
 
 
 # =========================================================
-# RUN LOCAL
+# VERCEL / LOCAL ENTRY
 # =========================================================
 
 if __name__ == "__main__":
 
-    port = int(
-        os.environ.get(
-            "PORT",
-            5000
-        )
-    )
-
-
     app.run(
-
         host="0.0.0.0",
-
-        port=port,
-
-        debug=False,
-
+        port=5000,
+        debug=True,
     )
