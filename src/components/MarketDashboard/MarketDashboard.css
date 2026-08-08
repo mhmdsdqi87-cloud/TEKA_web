@@ -1,0 +1,716 @@
+.market-dashboard {
+  position: relative;
+
+  padding: 130px 8%;
+
+  background:
+    radial-gradient(
+      circle at 50% 0%,
+      rgba(255, 215, 0, 0.07),
+      transparent 42%
+    ),
+    #050505;
+
+  color: #fff;
+
+  overflow: hidden;
+}
+
+
+/* BACKGROUND */
+
+.market-background-glow {
+  position: absolute;
+
+  width: 600px;
+  height: 600px;
+
+  top: -350px;
+  left: 50%;
+
+  transform:
+    translateX(-50%);
+
+  background:
+    rgba(255, 215, 0, 0.08);
+
+  filter: blur(100px);
+
+  pointer-events: none;
+}
+
+
+/* HEADER */
+
+.market-header {
+  position: relative;
+
+  z-index: 2;
+
+  max-width: 1250px;
+
+  margin: 0 auto 65px;
+
+  display: flex;
+
+  align-items: flex-end;
+
+  justify-content: space-between;
+
+  gap: 30px;
+}
+
+
+.market-header-content {
+  max-width: 750px;
+}
+
+
+.market-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 9px 17px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid
+    rgba(255, 215, 0, 0.25);
+
+  background:
+    rgba(255, 215, 0, 0.07);
+
+  color: #ffd700;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 3px;
+}
+
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+
+  flex-shrink: 0;
+
+  border-radius: 50%;
+
+  background: #35ff8a;
+
+  box-shadow:
+    0 0 12px
+    rgba(53, 255, 138, 0.8);
+
+  animation:
+    livePulse
+    1.5s
+    ease-in-out
+    infinite;
+}
+
+
+.market-header h2 {
+  margin: 26px 0 15px;
+
+  font-size:
+    clamp(42px, 5vw, 72px);
+
+  line-height: 1;
+
+  letter-spacing: -3px;
+
+  font-weight: 800;
+}
+
+
+.market-header h2 span {
+  color: #ffd700;
+}
+
+
+.market-header p {
+  margin: 0;
+
+  color: #777;
+
+  font-size: 17px;
+
+  line-height: 1.7;
+}
+
+
+.market-status {
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 10px 17px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid
+    rgba(53, 255, 138, 0.18);
+
+  background:
+    rgba(53, 255, 138, 0.035);
+
+  color: #35ff8a;
+
+  font-size: 9px;
+
+  font-weight: 800;
+
+  letter-spacing: 2px;
+}
+
+
+/* GRID */
+
+.market-grid {
+  position: relative;
+
+  z-index: 2;
+
+  max-width: 1250px;
+
+  margin: 0 auto;
+
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 22px;
+}
+
+
+/* CARD */
+
+.market-card {
+  position: relative;
+
+  min-height: 235px;
+
+  padding: 28px;
+
+  border-radius: 27px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.065),
+      rgba(255, 255, 255, 0.018)
+    );
+
+  border:
+    1px solid
+    rgba(255, 255, 255, 0.08);
+
+  backdrop-filter:
+    blur(16px);
+
+  overflow: hidden;
+
+  transition:
+    transform 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+
+  animation:
+    marketCardEnter
+    0.7s ease
+    var(--delay)
+    both;
+}
+
+
+.market-card::before {
+  content: "";
+
+  position: absolute;
+
+  width: 180px;
+  height: 180px;
+
+  top: -100px;
+  right: -100px;
+
+  border-radius: 50%;
+
+  background:
+    rgba(255, 215, 0, 0.035);
+
+  filter: blur(30px);
+
+  pointer-events: none;
+}
+
+
+.market-card:hover {
+  transform:
+    translateY(-8px);
+
+  border-color:
+    rgba(255, 215, 0, 0.35);
+
+  box-shadow:
+    0 25px 70px
+    rgba(0, 0, 0, 0.45),
+
+    0 0 35px
+    rgba(255, 215, 0, 0.07);
+}
+
+
+/* TOP */
+
+.market-card-top {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 15px;
+}
+
+
+.coin-info {
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+}
+
+
+.coin-icon {
+  width: 47px;
+  height: 47px;
+
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 14px;
+
+  background:
+    rgba(255, 215, 0, 0.08);
+
+  border:
+    1px solid
+    rgba(255, 215, 0, 0.15);
+
+  color: #ffd700;
+
+  font-size: 24px;
+
+  font-weight: 800;
+
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+
+.market-card:hover .coin-icon {
+  transform:
+    scale(1.08);
+
+  box-shadow:
+    0 0 20px
+    rgba(255, 215, 0, 0.15);
+}
+
+
+.coin-info h3 {
+  margin: 0;
+
+  color: #fff;
+
+  font-size: 18px;
+
+  font-weight: 800;
+}
+
+
+.coin-info p {
+  margin: 4px 0 0;
+
+  color: #666;
+
+  font-size: 11px;
+}
+
+
+.coin-change {
+  font-size: 12px;
+
+  font-weight: 800;
+}
+
+
+.positive {
+  color: #35ff8a;
+}
+
+
+.negative {
+  color: #ff5264;
+}
+
+
+/* PRICE */
+
+.coin-price {
+  position: relative;
+
+  z-index: 2;
+
+  margin-top: 27px;
+
+  color: #fff;
+
+  font-size: 30px;
+
+  font-weight: 800;
+
+  letter-spacing: -1px;
+}
+
+
+/* REAL CHART */
+
+.mini-chart {
+  position: relative;
+
+  z-index: 2;
+
+  width: 100%;
+
+  height: 52px;
+
+  margin-top: 17px;
+
+  overflow: hidden;
+
+  border-radius: 8px;
+}
+
+
+.chart-svg {
+  display: block;
+
+  width: 100%;
+
+  height: 100%;
+
+  overflow: visible;
+}
+
+
+.empty-chart {
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  color: #444;
+
+  font-size: 9px;
+
+  letter-spacing: 1px;
+}
+
+
+/* FOOTER */
+
+.coin-footer {
+  position: relative;
+
+  z-index: 2;
+
+  display: flex;
+
+  justify-content: space-between;
+
+  gap: 15px;
+
+  margin-top: 15px;
+
+  color: #4d4d4d;
+
+  font-size: 9px;
+
+  letter-spacing: 1px;
+}
+
+
+/* TEKA */
+
+.teka-coming-soon {
+  border-color:
+    rgba(255, 215, 0, 0.27);
+
+  background:
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(255, 215, 0, 0.13),
+      transparent 42%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 215, 0, 0.07),
+      rgba(255, 255, 255, 0.018)
+    );
+}
+
+
+.teka-coming-soon:hover {
+  border-color:
+    #ffd700;
+
+  box-shadow:
+    0 25px 70px
+    rgba(0, 0, 0, 0.45),
+
+    0 0 45px
+    rgba(255, 215, 0, 0.14);
+}
+
+
+.teka-icon {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 215, 0, 0.18),
+      rgba(255, 215, 0, 0.05)
+    );
+
+  border-color:
+    rgba(255, 215, 0, 0.35);
+
+  box-shadow:
+    0 0 20px
+    rgba(255, 215, 0, 0.08);
+}
+
+
+.coming-badge {
+  padding: 6px 11px;
+
+  border-radius: 999px;
+
+  border:
+    1px solid
+    rgba(255, 215, 0, 0.3);
+
+  background:
+    rgba(255, 215, 0, 0.08);
+
+  color: #ffd700;
+
+  font-size: 8px;
+
+  font-weight: 800;
+
+  letter-spacing: 2px;
+}
+
+
+.teka-soon-content {
+  position: relative;
+
+  z-index: 2;
+
+  margin-top: 31px;
+}
+
+
+.teka-soon-title {
+  color: #ffd700;
+
+  font-size: 38px;
+
+  font-weight: 900;
+
+  letter-spacing: 6px;
+
+  text-shadow:
+    0 0 25px
+    rgba(255, 215, 0, 0.25);
+}
+
+
+.teka-soon-text {
+  margin-top: 8px;
+
+  color: #999;
+
+  font-size: 16px;
+
+  font-weight: 600;
+
+  letter-spacing: 2px;
+}
+
+
+.teka-soon-line {
+  width: 80px;
+  height: 1px;
+
+  margin-top: 22px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #ffd700,
+      transparent
+    );
+}
+
+
+.teka-soon-content p {
+  margin: 12px 0 0;
+
+  color: #4d4d4d;
+
+  font-size: 10px;
+
+  letter-spacing: 1px;
+}
+
+
+/* ANIMATIONS */
+
+@keyframes livePulse {
+
+  0%,
+  100% {
+    opacity: 0.4;
+
+    transform:
+      scale(0.8);
+  }
+
+  50% {
+    opacity: 1;
+
+    transform:
+      scale(1.15);
+  }
+
+}
+
+
+@keyframes marketCardEnter {
+
+  from {
+    opacity: 0;
+
+    transform:
+      translateY(25px);
+  }
+
+  to {
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+
+}
+
+
+/* TABLET */
+
+@media (max-width: 900px) {
+
+  .market-dashboard {
+    padding: 100px 6%;
+  }
+
+
+  .market-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    margin-bottom: 45px;
+  }
+
+
+  .market-grid {
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+  }
+
+}
+
+
+/* MOBILE */
+
+@media (max-width: 600px) {
+
+  .market-dashboard {
+    padding: 85px 5%;
+  }
+
+
+  .market-header h2 {
+    font-size: 40px;
+
+    letter-spacing: -2px;
+  }
+
+
+  .market-header p {
+    font-size: 14px;
+  }
+
+
+  .market-status {
+    font-size: 8px;
+  }
+
+
+  .market-grid {
+    grid-template-columns: 1fr;
+
+    gap: 16px;
+  }
+
+
+  .market-card {
+    min-height: 220px;
+
+    padding: 23px;
+  }
+
+
+  .coin-price {
+    font-size: 27px;
+  }
+
+
+  .teka-soon-title {
+    font-size: 34px;
+  }
+
+}

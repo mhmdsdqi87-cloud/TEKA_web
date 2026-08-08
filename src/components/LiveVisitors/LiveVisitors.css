@@ -1,0 +1,349 @@
+.live-visitors-wrapper {
+  width: 100%;
+
+  display: flex;
+  justify-content: center;
+
+  padding: 25px 20px 70px;
+
+  position: relative;
+  z-index: 5;
+}
+
+
+/* =========================
+   MAIN CARD
+========================= */
+
+.live-visitors {
+  position: relative;
+
+  width: 280px;
+  min-height: 155px;
+
+  padding: 25px 28px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  overflow: hidden;
+
+  border-radius: 28px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.08),
+      rgba(255,255,255,.025)
+    );
+
+  border: 1px solid rgba(255,215,0,.22);
+
+  backdrop-filter: blur(25px);
+
+  box-shadow:
+    0 25px 80px rgba(0,0,0,.45),
+    0 0 50px rgba(255,215,0,.06);
+
+  transition:
+    transform .4s ease,
+    border-color .4s ease,
+    box-shadow .4s ease;
+}
+
+
+/* Hover */
+
+.live-visitors:hover {
+
+  transform: translateY(-8px);
+
+  border-color: rgba(255,215,0,.55);
+
+  box-shadow:
+    0 35px 100px rgba(0,0,0,.55),
+    0 0 60px rgba(255,215,0,.14);
+}
+
+
+/* =========================
+   GOLD AMBIENT GLOW
+========================= */
+
+.live-visitors::before {
+
+  content: "";
+
+  position: absolute;
+
+  width: 180px;
+  height: 180px;
+
+  top: -100px;
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  background:
+    radial-gradient(
+      circle,
+      rgba(255,215,0,.18),
+      transparent 70%
+    );
+
+  filter: blur(15px);
+
+  pointer-events: none;
+}
+
+
+/* =========================
+   MOVING LIGHT
+========================= */
+
+.live-visitors::after {
+
+  content: "";
+
+  position: absolute;
+
+  width: 120px;
+  height: 1px;
+
+  left: -140px;
+  top: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      transparent,
+      #FFD700,
+      transparent
+    );
+
+  opacity: .7;
+
+  animation: liveScan 5s linear infinite;
+}
+
+
+@keyframes liveScan {
+
+  0% {
+    left: -140px;
+  }
+
+  100% {
+    left: 320px;
+  }
+
+}
+
+
+/* =========================
+   LIVE STATUS
+========================= */
+
+.live-status {
+
+  position: relative;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 9px;
+
+  color: #aaa;
+
+  font-size: 10px;
+
+  font-weight: 800;
+
+  letter-spacing: 4px;
+
+  z-index: 2;
+}
+
+
+/* =========================
+   LIVE DOT
+========================= */
+
+.live-dot {
+
+  position: relative;
+
+  width: 8px;
+  height: 8px;
+
+  border-radius: 50%;
+
+  background: #555;
+
+}
+
+
+.live-dot.online {
+
+  background: #00ff88;
+
+  box-shadow:
+    0 0 8px #00ff88,
+    0 0 18px rgba(0,255,136,.65);
+
+  animation: livePulse 1.8s ease-in-out infinite;
+}
+
+
+.live-dot.online::after {
+
+  content: "";
+
+  position: absolute;
+
+  inset: -6px;
+
+  border-radius: 50%;
+
+  border: 1px solid rgba(0,255,136,.4);
+
+  animation: liveRing 1.8s ease-out infinite;
+
+}
+
+
+@keyframes livePulse {
+
+  0%,
+  100% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.25);
+  }
+
+}
+
+
+@keyframes liveRing {
+
+  0% {
+    transform: scale(.6);
+    opacity: .8;
+  }
+
+  100% {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+
+}
+
+
+/* =========================
+   NUMBER
+========================= */
+
+.live-number {
+
+  position: relative;
+
+  margin-top: 13px;
+
+  color: #FFD700;
+
+  font-size: 48px;
+
+  line-height: 1;
+
+  font-weight: 900;
+
+  letter-spacing: -2px;
+
+  text-shadow:
+    0 0 20px rgba(255,215,0,.35),
+    0 0 45px rgba(255,215,0,.12);
+
+  z-index: 2;
+
+  animation: numberGlow 3s ease-in-out infinite;
+}
+
+
+@keyframes numberGlow {
+
+  0%,
+  100% {
+    text-shadow:
+      0 0 20px rgba(255,215,0,.25);
+  }
+
+  50% {
+    text-shadow:
+      0 0 30px rgba(255,215,0,.55),
+      0 0 60px rgba(255,215,0,.15);
+  }
+
+}
+
+
+/* =========================
+   LABEL
+========================= */
+
+.live-label {
+
+  position: relative;
+
+  margin-top: 9px;
+
+  color: #777;
+
+  font-size: 12px;
+
+  letter-spacing: .5px;
+
+  z-index: 2;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media(max-width:600px) {
+
+  .live-visitors-wrapper {
+
+    padding:
+      15px
+      20px
+      55px;
+
+  }
+
+
+  .live-visitors {
+
+    width: 250px;
+
+    min-height: 145px;
+
+    padding: 22px;
+
+    border-radius: 24px;
+
+  }
+
+
+  .live-number {
+
+    font-size: 44px;
+
+  }
+
+}

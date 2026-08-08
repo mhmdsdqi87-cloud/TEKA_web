@@ -1,4 +1,5 @@
 import Hero from "../../components/Hero/Hero";
+import MarketDashboard from "../../components/MarketDashboard/MarketDashboard";
 import Features from "../../components/Features/Features";
 import Vision from "../../components/Vision/Vision";
 import Tokenomics from "../../components/Tokenomics/Tokenomics";
@@ -8,23 +9,36 @@ import Community from "../../components/Community/Community";
 import TokenInfo from "../../components/TokenInfo/TokenInfo";
 import Footer from "../../components/Footer/Footer";
 
+import LiveVisitors from "../../components/LiveVisitors/LiveVisitors";
 
-function Home(){
+function Home() {
+  return (
+    <>
+      <Hero />
 
-return(
-<>
-<Hero />
-<Features />
-<Vision />
-<Tokenomics />
-<Roadmap />
-<FAQ />
-<Community />
-<TokenInfo />
-<Footer />
-</>
-);
+      <div className="live-visitors-wrapper">
+        <LiveVisitors />
+      </div>
 
+      <MarketDashboard />
+
+      <Features />
+
+      <Vision />
+
+      <Tokenomics />
+
+      <Roadmap />
+
+      <FAQ />
+
+      <Community />
+
+      <TokenInfo />
+
+      <Footer />
+    </>
+  );
 }
 
 export default Home;
