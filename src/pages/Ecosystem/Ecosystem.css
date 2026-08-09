@@ -1,42 +1,71 @@
 .ecosystem-page{
 
+    min-height:100vh;
 
-min-height:100vh;
+    background:
+    radial-gradient(
+        circle at top,
+        rgba(255,215,0,.15),
+        transparent 35%
+    ),
+    #050505;
 
-background:#050505;
+    color:white;
 
-color:white;
+    padding:160px 8%;
 
-padding:160px 8%;
+    position:relative;
 
-position:relative;
-
-overflow:hidden;
-
+    overflow:hidden;
 
 }
 
 
+
+/* BACKGROUND GLOW */
 
 .ecosystem-glow{
 
+    position:absolute;
 
-position:absolute;
+    width:700px;
 
-width:600px;
+    height:700px;
 
-height:600px;
+    background:#FFD700;
 
-background:#FFD700;
+    filter:blur(220px);
 
-filter:blur(200px);
+    opacity:.12;
 
-opacity:.12;
+    top:-250px;
 
-top:-200px;
+    left:50%;
 
-left:50%;
+    transform:translateX(-50%);
 
+    animation:
+    glowMove 8s infinite alternate;
+
+}
+
+
+
+@keyframes glowMove{
+
+    from{
+
+        opacity:.08;
+        transform:translateX(-50%) scale(1);
+
+    }
+
+    to{
+
+        opacity:.18;
+        transform:translateX(-50%) scale(1.2);
+
+    }
 
 }
 
@@ -44,15 +73,18 @@ left:50%;
 
 
 
+/* HEADER */
+
 .ecosystem-header{
 
+    text-align:center;
 
-text-align:center;
+    max-width:1000px;
 
-max-width:1000px;
+    margin:auto;
 
-margin:auto;
-
+    animation:
+    fadeUp 1s ease;
 
 }
 
@@ -60,13 +92,13 @@ margin:auto;
 
 .ecosystem-header p{
 
+    color:#FFD700;
 
-color:#FFD700;
+    letter-spacing:10px;
 
-letter-spacing:10px;
+    font-size:14px;
 
-font-size:14px;
-
+    font-weight:700;
 
 }
 
@@ -74,13 +106,13 @@ font-size:14px;
 
 .ecosystem-header h1{
 
+    font-size:90px;
 
-font-size:90px;
+    line-height:1;
 
-line-height:1;
+    margin:40px 0;
 
-margin:40px 0;
-
+    font-weight:900;
 
 }
 
@@ -88,109 +120,150 @@ margin:40px 0;
 
 .ecosystem-header h1 span{
 
+    background:
 
-color:#FFD700;
+    linear-gradient(
+    90deg,
+    #FFD700,
+    #00E5FF
+    );
 
+
+    -webkit-background-clip:text;
+
+    color:transparent;
 
 }
-
 
 
 
 .ecosystem-header h2{
 
+    color:#999;
 
-color:#888;
+    font-size:24px;
 
-font-size:24px;
+    font-weight:400;
 
-font-weight:400;
-
+    line-height:1.6;
 
 }
 
 
 
 
+
+/* CARDS */
 
 .ecosystem-grid{
 
 
-max-width:1200px;
+    max-width:1200px;
 
-margin:120px auto;
+    margin:120px auto;
 
-display:grid;
 
-grid-template-columns:repeat(3,1fr);
+    display:grid;
 
-gap:35px;
+    grid-template-columns:
+    repeat(3,1fr);
+
+
+    gap:35px;
 
 
 }
-
-
 
 
 
 .ecosystem-card{
 
 
-padding:45px 35px;
+    padding:45px 35px;
 
 
-background:
+    background:
 
-linear-gradient(
-
-145deg,
-
-rgba(255,255,255,.08),
-
-rgba(255,255,255,.02)
-
-);
+    linear-gradient(
+    145deg,
+    rgba(255,255,255,.09),
+    rgba(255,255,255,.02)
+    );
 
 
+    border:
 
-border:
-
-1px solid rgba(255,215,0,.15);
+    1px solid rgba(255,215,0,.15);
 
 
 
-border-radius:30px;
+    border-radius:30px;
 
 
-transition:.4s;
+    transition:.5s;
 
 
+    backdrop-filter:blur(20px);
 
-backdrop-filter:blur(20px);
+
+    animation:
+
+    fadeUp .8s ease both;
 
 
 }
 
 
 
+.ecosystem-card:nth-child(2){
+
+    animation-delay:.15s;
+
+}
+
+.ecosystem-card:nth-child(3){
+
+    animation-delay:.3s;
+
+}
+
+.ecosystem-card:nth-child(4){
+
+    animation-delay:.45s;
+
+}
+
+.ecosystem-card:nth-child(5){
+
+    animation-delay:.6s;
+
+}
+
+.ecosystem-card:nth-child(6){
+
+    animation-delay:.75s;
+
+}
+
+
+
+
+
 .ecosystem-card:hover{
 
 
-transform:
+    transform:
 
-translateY(-15px)
-scale(1.03);
-
-
-
-border-color:#FFD700;
+    translateY(-18px)
+    scale(1.04);
 
 
+    border-color:#FFD700;
 
-box-shadow:
 
-0 30px 70px rgba(255,215,0,.18);
+    box-shadow:
 
+    0 30px 90px rgba(255,215,0,.25);
 
 
 }
@@ -202,9 +275,9 @@ box-shadow:
 .ecosystem-icon{
 
 
-font-size:55px;
+    font-size:60px;
 
-margin-bottom:25px;
+    margin-bottom:25px;
 
 
 }
@@ -216,24 +289,22 @@ margin-bottom:25px;
 .ecosystem-card h3{
 
 
-font-size:28px;
+    font-size:28px;
 
-margin-bottom:15px;
-
+    margin-bottom:15px;
 
 }
-
 
 
 
 .ecosystem-card p{
 
 
-color:#888;
+    color:#999;
 
-font-size:17px;
+    font-size:17px;
 
-line-height:1.8;
+    line-height:1.8;
 
 
 }
@@ -242,19 +313,20 @@ line-height:1.8;
 
 
 
+/* CORE */
 
 .ecosystem-core{
 
 
-display:flex;
+    display:flex;
 
-justify-content:center;
+    justify-content:center;
 
-align-items:center;
+    align-items:center;
 
-gap:80px;
+    gap:100px;
 
-margin-top:150px;
+    margin-top:170px;
 
 
 }
@@ -266,42 +338,74 @@ margin-top:150px;
 .core-circle{
 
 
-width:260px;
+    width:280px;
 
-height:260px;
-
-
-border-radius:50%;
+    height:280px;
 
 
-display:flex;
-
-align-items:center;
-
-justify-content:center;
+    border-radius:50%;
 
 
-font-size:55px;
+    display:flex;
 
-font-weight:800;
+    align-items:center;
 
-
-
-color:#050505;
+    justify-content:center;
 
 
-background:#FFD700;
+    font-size:60px;
+
+    font-weight:900;
 
 
+    color:#050505;
 
-box-shadow:
 
-0 0 100px rgba(255,215,0,.4);
+    background:
 
+
+    radial-gradient(
+    circle,
+    #fff5a0,
+    #FFD700
+    );
+
+
+    box-shadow:
+
+
+    0 0 60px #FFD700,
+
+
+    0 0 150px rgba(255,215,0,.5);
+
+
+    animation:
+
+    corePulse 3s infinite;
 
 
 }
 
+
+
+@keyframes corePulse{
+
+
+    0%,100%{
+
+        transform:scale(1);
+
+    }
+
+
+    50%{
+
+        transform:scale(1.08);
+
+    }
+
+}
 
 
 
@@ -309,8 +413,7 @@ box-shadow:
 .core-text{
 
 
-max-width:450px;
-
+    max-width:500px;
 
 }
 
@@ -319,8 +422,9 @@ max-width:450px;
 .core-text h2{
 
 
-font-size:45px;
+    font-size:45px;
 
+    font-weight:800;
 
 }
 
@@ -329,32 +433,81 @@ font-size:45px;
 .core-text p{
 
 
-color:#888;
+    color:#999;
 
-font-size:20px;
+    font-size:20px;
 
-line-height:1.8;
-
+    line-height:1.8;
 
 }
 
 
 
 
+
+/* GLOBAL ANIMATION */
+
+@keyframes fadeUp{
+
+
+    from{
+
+        opacity:0;
+
+        transform:
+        translateY(50px);
+
+    }
+
+
+    to{
+
+        opacity:1;
+
+        transform:
+        translateY(0);
+
+    }
+
+}
+
+
+
+
+
+/* MOBILE */
 
 @media(max-width:900px){
 
 
-.ecosystem-header h1{
+.ecosystem-page{
 
-font-size:45px;
+    padding:120px 20px;
 
 }
 
 
+
+.ecosystem-header h1{
+
+    font-size:45px;
+
+}
+
+
+
+.ecosystem-header h2{
+
+    font-size:18px;
+
+}
+
+
+
 .ecosystem-grid{
 
-grid-template-columns:1fr;
+
+    grid-template-columns:1fr;
 
 }
 
@@ -362,9 +515,32 @@ grid-template-columns:1fr;
 
 .ecosystem-core{
 
-flex-direction:column;
 
-text-align:center;
+    flex-direction:column;
+
+    text-align:center;
+
+    gap:50px;
+
+}
+
+
+
+.core-circle{
+
+    width:200px;
+
+    height:200px;
+
+    font-size:45px;
+
+}
+
+
+
+.core-text h2{
+
+    font-size:32px;
 
 }
 
