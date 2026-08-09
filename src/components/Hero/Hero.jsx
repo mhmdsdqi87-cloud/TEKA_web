@@ -37,15 +37,17 @@ TEKA<span>.</span>
 <h2>
 Building The Future
 <br/>
-Of Digital Innovation
+Of Digital Technology
 </h2>
 
 
 
 <p>
-A technology brand creating
+A Web3 technology ecosystem focused on
 <br/>
-modern solutions for the digital era.
+digital products, innovative tools,
+<br/>
+and future digital experiences.
 </p>
 
 
@@ -56,7 +58,7 @@ to="/explore"
 className="hero-button"
 >
 
-Explore TEKA →
+Explore Ecosystem →
 
 </Link>
 
