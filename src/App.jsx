@@ -26,6 +26,8 @@ import Performance from "./pages/Performance/Performance";
 import Security from "./pages/Security/Security";
 import GlobalVision from "./pages/GlobalVision/GlobalVision";
 
+import TEKAReveal from "./components/TEKAReveal/TEKAReveal";
+
 
 
 
@@ -41,6 +43,9 @@ return(
 
 
 <Loader />
+
+
+<TEKAReveal />
 
 
 
