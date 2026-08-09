@@ -9,42 +9,42 @@ const ecosystemItems = [
 {
 icon:"🪙",
 title:"TEKA Token",
-text:"The core asset powering the TEKA digital economy."
+text:"A utility token designed to power digital products, services, and experiences inside the TEKA ecosystem."
 },
 
 
 {
 icon:"⚡",
 title:"Technology Platform",
-text:"Modern software solutions built for the next generation."
+text:"Innovative digital tools and technology solutions designed for future users and evolving digital needs."
 },
 
 
 {
 icon:"🔗",
-title:"Blockchain Network",
-text:"Secure and transparent decentralized infrastructure."
+title:"Blockchain Infrastructure",
+text:"Blockchain-based infrastructure enabling secure, transparent, and reliable digital experiences."
 },
 
 
 {
 icon:"📈",
 title:"Digital Economy",
-text:"A sustainable ecosystem connecting users and innovation."
+text:"A digital economy connecting users, products, and future technology through meaningful experiences."
 },
 
 
 {
 icon:"🌎",
 title:"Global Community",
-text:"A worldwide network building the future together."
+text:"A growing community of creators, developers, and technology enthusiasts building together."
 },
 
 
 {
 icon:"🚀",
 title:"Future Products",
-text:"Next generation applications and experiences."
+text:"Future digital products and experiences designed to expand the TEKA ecosystem."
 }
 
 ];
@@ -81,8 +81,9 @@ One Ecosystem.
 
 <h2>
 
-Connecting blockchain, technology
-and digital innovation.
+A technology ecosystem combining
+<br/>
+Web3, digital products, and future innovation.
 
 </h2>
 
@@ -166,7 +167,9 @@ The Center Of Digital Innovation
 <p>
 
 Every part of TEKA works together
-to create a powerful technology ecosystem.
+to create a connected technology ecosystem
+focused on digital products, blockchain,
+and future experiences.
 
 </p>
 
