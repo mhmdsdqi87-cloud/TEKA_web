@@ -1,147 +1,130 @@
-<div align="center">
-
 # TEKA
 
-### Blockchain Technology Platform
+> **A Full-Stack Web and Blockchain Technology Project**
 
-*A Full-Stack Software Engineering Project*
+TEKA is a full-stack software engineering project that explores the integration of modern web development, backend services, and blockchain technology.
 
-![React](https://img.shields.io/badge/React-Frontend-61DAFB)
-![Python](https://img.shields.io/badge/Python-Backend-3776AB)
-![Flask](https://img.shields.io/badge/Flask-API-000000)
-![Solidity](https://img.shields.io/badge/Solidity-Smart%20Contracts-363636)
-![MIT License](https://img.shields.io/badge/License-MIT-green)
-
-</div>
+The project demonstrates practical experience in designing responsive user interfaces, developing REST APIs, managing databases, and implementing blockchain smart contracts within a unified architecture.
 
 ---
 
-# About
+## Overview
 
-TEKA is a full-stack software engineering project focused on modern web technologies, blockchain development, and backend systems.
+The primary objective of TEKA is to build a modular and scalable technology platform while applying modern software engineering principles.
 
-The project was developed as a practical demonstration of software engineering principles, combining responsive frontend development, REST APIs, database management, and blockchain technologies into a single platform.
+The project consists of:
 
----
-
-# Features
-
-- Modern responsive web interface
-- Full-stack architecture
+- React-based frontend
+- Python Flask backend
 - RESTful API
-- Blockchain integration
-- TEKA Token smart contract
-- Responsive design
-- Component-based architecture
-- Clean and scalable code structure
+- SQLite database
+- Solidity smart contracts
+- Modular project architecture
 
 ---
 
-# Technology Stack
+## Technology Stack
 
-## Frontend
+### Frontend
 
 - React
 - Vite
-- JavaScript
+- JavaScript (ES6+)
 - CSS3
 - React Router
 
-## Backend
+### Backend
 
 - Python
 - Flask
+- Flask-CORS
 - SQLite
-- REST API
 
-## Blockchain
+### Blockchain
 
 - Solidity
-- ERC-20 Smart Contract
+- ERC-20 Token Standard
+
+### Development Tools
+
+- Git
+- GitHub
+- Visual Studio Code
 
 ---
 
-# Architecture
+## Project Structure
 
-```
-                Browser
-                   │
-            React + Vite
-                   │
-            REST API (Flask)
-                   │
-              SQLite Database
-
-Blockchain Layer
-        │
-Smart Contract
-        │
-TEKA Token
-```
-
----
-
-# Project Structure
-
-```
+```text
 TEKA
 │
-├── src
-│   ├── components
-│   ├── pages
-│   ├── blockchain
-│   └── assets
+├── api/
+├── backend/
+├── public/
+├── src/
+│   ├── animations/
+│   ├── assets/
+│   ├── blockchain/
+│   ├── components/
+│   └── pages/
 │
-├── backend
-│
-├── api
-│
-├── public
-│
-├── docs
-│
-└── README.md
+├── package.json
+├── README.md
+└── LICENSE
 ```
 
 ---
 
-# Software Engineering Concepts
+## Features
 
-This project demonstrates practical experience with:
+- Modern responsive user interface
+- Component-based architecture
+- RESTful API integration
+- Backend data management
+- Blockchain token implementation
+- Modular code structure
+- Responsive design
+- Cross-platform compatibility
+
+---
+
+## Software Engineering Concepts
+
+This project demonstrates practical knowledge of:
 
 - Frontend Development
 - Backend Development
 - REST API Design
-- Database Design
+- Database Integration
+- Blockchain Development
 - Smart Contract Development
-- Blockchain Integration
-- Responsive UI Design
+- Responsive Web Design
 - Component-Based Architecture
-- Git Version Control
+- Version Control using Git
 
 ---
 
-# Installation
+## Installation
 
-Clone repository
+Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/TEKA.git
+git clone https://github.com/mhmdsdqi87-cloud/TEKA_web.git
 ```
 
-Install packages
+Install dependencies
 
 ```bash
 npm install
 ```
 
-Start frontend
+Run the frontend
 
 ```bash
 npm run dev
 ```
 
-Run backend
+Run the backend
 
 ```bash
 cd backend
@@ -150,29 +133,27 @@ python app.py
 
 ---
 
-# Future Development
+## Future Development
 
-- Authentication System
-- Cloud Deployment
-- API Improvements
-- Smart Contract Enhancements
+- User Authentication
 - Wallet Integration
+- API Improvements
 - Performance Optimization
+- Cloud Deployment
+- Additional Blockchain Features
 
 ---
 
-# Author
+## Author
 
 **Mohammad Sadeghi**
 
 Software Developer
 
-GitHub
-
-https://github.com/YOUR_USERNAME
+GitHub: https://github.com/mhmdsdqi87-cloud
 
 ---
 
-# License
+## License
 
-MIT License
+This project is licensed under the MIT License.
