@@ -2,41 +2,38 @@
 
 # TEKA
 
-### Digital Technology Ecosystem
+### Blockchain Technology Platform
 
-Modern Web Platform • Blockchain • REST API • Digital Community
+*A Full-Stack Software Engineering Project*
 
-![React](https://img.shields.io/badge/React-19-blue)
-![Vite](https://img.shields.io/badge/Vite-Latest-purple)
-![Python](https://img.shields.io/badge/Python-3.12-yellow)
-![Flask](https://img.shields.io/badge/Flask-Backend-black)
-![Solidity](https://img.shields.io/badge/Solidity-Smart_Contracts-grey)
-![License](https://img.shields.io/badge/License-MIT-green)
+![React](https://img.shields.io/badge/React-Frontend-61DAFB)
+![Python](https://img.shields.io/badge/Python-Backend-3776AB)
+![Flask](https://img.shields.io/badge/Flask-API-000000)
+![Solidity](https://img.shields.io/badge/Solidity-Smart%20Contracts-363636)
+![MIT License](https://img.shields.io/badge/License-MIT-green)
 
 </div>
 
 ---
 
-# Overview
+# About
 
-TEKA is a full-stack technology ecosystem designed to combine modern web development, blockchain technology, and community-driven digital experiences into a single platform.
+TEKA is a full-stack software engineering project focused on modern web technologies, blockchain development, and backend systems.
 
-The project demonstrates practical software engineering skills including frontend development, backend API design, blockchain integration, database management, and system architecture.
+The project was developed as a practical demonstration of software engineering principles, combining responsive frontend development, REST APIs, database management, and blockchain technologies into a single platform.
 
 ---
 
-# Main Features
+# Features
 
-- Modern responsive website
-- React + Vite frontend
-- Python Flask backend
-- REST API
-- SQLite database
+- Modern responsive web interface
+- Full-stack architecture
+- RESTful API
 - Blockchain integration
-- TEKA Token (Solidity)
-- Digital War competitive system
-- Team & Faction architecture
-- GitHub version control
+- TEKA Token smart contract
+- Responsive design
+- Component-based architecture
+- Clean and scalable code structure
 
 ---
 
@@ -54,96 +51,73 @@ The project demonstrates practical software engineering skills including fronten
 
 - Python
 - Flask
-- REST API
 - SQLite
+- REST API
 
 ## Blockchain
 
 - Solidity
-- ERC-20 Token
-- Smart Contracts
+- ERC-20 Smart Contract
 
-## Tools
+---
 
-- Git
-- GitHub
-- VS Code
+# Architecture
+
+```
+                Browser
+                   │
+            React + Vite
+                   │
+            REST API (Flask)
+                   │
+              SQLite Database
+
+Blockchain Layer
+        │
+Smart Contract
+        │
+TEKA Token
+```
 
 ---
 
 # Project Structure
 
-```text
+```
 TEKA
 │
-├── src/
-│   ├── components/
-│   ├── pages/
-│   ├── blockchain/
-│   └── assets/
+├── src
+│   ├── components
+│   ├── pages
+│   ├── blockchain
+│   └── assets
 │
-├── backend/
+├── backend
 │
-├── api/
+├── api
 │
-├── digital-war/
-│   ├── frontend/
-│   └── backend/
+├── public
 │
-└── public/
+├── docs
+│
+└── README.md
 ```
-
----
-
-# Digital War
-
-Digital War is a competitive community system inside the TEKA ecosystem.
-
-Current Architecture
-
-- Factions
-- Players
-- XP System
-- Score System
-- REST API
-- Database
-
-Planned
-
-- Telegram Bot
-- Leaderboard
-- Missions
-- Battle System
-- Global Rankings
-
----
-
-# Blockchain
-
-The ecosystem includes its own blockchain token developed using Solidity.
-
-Current Components
-
-- ERC-20 Token
-- Smart Contract
-- Wallet Integration (Planned)
 
 ---
 
 # Software Engineering Concepts
 
-This project demonstrates experience with:
+This project demonstrates practical experience with:
 
-- Component-Based Architecture
-- RESTful API Design
-- Database Design
-- Authentication Concepts
-- Blockchain Development
-- Frontend Engineering
+- Frontend Development
 - Backend Development
-- Version Control
-- Responsive Design
-- Clean UI/UX
+- REST API Design
+- Database Design
+- Smart Contract Development
+- Blockchain Integration
+- Responsive UI Design
+- Component-Based Architecture
+- Git Version Control
 
 ---
 
@@ -155,19 +129,19 @@ Clone repository
 git clone https://github.com/YOUR_USERNAME/TEKA.git
 ```
 
-Install dependencies
+Install packages
 
 ```bash
 npm install
 ```
 
-Run development server
+Start frontend
 
 ```bash
 npm run dev
 ```
 
-Backend
+Run backend
 
 ```bash
 cd backend
@@ -176,25 +150,14 @@ python app.py
 
 ---
 
-# Project Goals
+# Future Development
 
-- Build a modern digital ecosystem
-- Explore blockchain technologies
-- Develop scalable backend systems
-- Create interactive community features
-- Improve software engineering skills
-
----
-
-# Future Roadmap
-
-- Telegram Integration
-- Authentication
-- Live Leaderboards
-- Token Utility
-- AI Features
-- Mobile Application
+- Authentication System
 - Cloud Deployment
+- API Improvements
+- Smart Contract Enhancements
+- Wallet Integration
+- Performance Optimization
 
 ---
 
@@ -204,7 +167,7 @@ python app.py
 
 Software Developer
 
-GitHub:
+GitHub
 
 https://github.com/YOUR_USERNAME
 
