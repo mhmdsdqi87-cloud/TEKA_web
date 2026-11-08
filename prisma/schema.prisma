@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─── TEKA Ecosystem ────────────────────────────────────────────────────────────
+
+// Ecosystem divisions & products. Status is one of:
+// LIVE | DEVELOPMENT | PLANNED | EXPERIMENTAL — always surfaced honestly in the UI.
+model Product {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  division    String // PRODUCTS | LABS | INTELLIGENCE | TECHNOLOGY | WEB3 | COMMUNITY
+  tagline     String
+  description String
+  status      String @default("PLANNED")
+  category    String // e.g. PLATFORM, TOOLING, INFRASTRUCTURE, COMMUNITY
+  metrics     String? // JSON array of { label, value } — real facts only
+  featured    Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+}
+
+// Roadmap milestones. Status: COMPLETED | IN_PROGRESS | PLANNED
+model RoadmapItem {
+  id          String @id @default(cuid())
+  phase       String // "PHASE 01"
+  title       String
+  description String
+  status      String @default("PLANNED")
+  period      String
+  order       Int    @default(0)
+}
+
+// Platform changelog shown in the Command Center.
+model PlatformUpdate {
+  id        String   @id @default(cuid())
+  title     String
+  body      String
+  type      String // FEATURE | IMPROVEMENT | MILESTONE | NOTICE
+  version   String?
+  createdAt DateTime @default(now())
+}
+
+// Verified facts + clearly-labeled design targets used across the site.
+// source: VERIFIED | DESIGN_TARGET | PLANNED
+model Metric {
+  id     String @id @default(cuid())
+  key    String @unique
+  label  String
+  value  String
+  detail String?
+  source String @default("VERIFIED")
+  order  Int    @default(0)
+}
+
+// Honest live-presence tracking (no inflation multiplier).
+model PresenceSession {
+  id       String   @id
+  lastSeen DateTime
+}
+
+// Contact submissions persisted for the team.
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  topic     String
+  message   String
+  createdAt DateTime @default(now())
+}

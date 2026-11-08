@@ -1,0 +1,438 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+  --font-mono: var(--font-plex-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  /* TEKA metallic palette */
+  --color-gold: var(--gold);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-deep: var(--gold-deep);
+  --color-silver: var(--silver);
+  --color-graphite: var(--graphite);
+  --color-panel: var(--panel);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+/*
+ * TEKA is a permanently dark, cinematic product.
+ * Root tokens ARE the dark theme — no light mode ambiguity.
+ */
+:root {
+  --radius: 0.75rem;
+
+  --background: #050505;
+  --foreground: #f2f2f0;
+
+  --card: #0b0b0d;
+  --card-foreground: #f2f2f0;
+  --popover: #101013;
+  --popover-foreground: #f2f2f0;
+
+  --primary: #e3b855;
+  --primary-foreground: #0a0a0a;
+
+  --secondary: #17171b;
+  --secondary-foreground: #e8e8e6;
+
+  --muted: #141417;
+  --muted-foreground: #8f939b;
+
+  --accent: #1a1a1f;
+  --accent-foreground: #f0d48a;
+
+  --destructive: #e5484d;
+
+  --border: rgba(227, 184, 85, 0.1);
+  --input: rgba(255, 255, 255, 0.08);
+  --ring: rgba(227, 184, 85, 0.45);
+
+  --chart-1: #e3b855;
+  --chart-2: #c8cdd6;
+  --chart-3: #8a6d2f;
+  --chart-4: #6e7683;
+  --chart-5: #43484f;
+
+  --sidebar: #0b0b0d;
+  --sidebar-foreground: #f2f2f0;
+  --sidebar-primary: #e3b855;
+  --sidebar-primary-foreground: #0a0a0a;
+  --sidebar-accent: #17171b;
+  --sidebar-accent-foreground: #f0d48a;
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-ring: rgba(227, 184, 85, 0.45);
+
+  --gold: #e3b855;
+  --gold-bright: #f0d48a;
+  --gold-deep: #b08d3e;
+  --silver: #9ba3ae;
+  --graphite: #17171b;
+  --panel: #0b0b0d;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(1200px 600px at 85% -10%, rgba(227, 184, 85, 0.06), transparent 60%),
+      radial-gradient(900px 500px at -10% 110%, rgba(155, 163, 174, 0.05), transparent 55%);
+    background-attachment: fixed;
+  }
+  ::selection {
+    background: rgba(227, 184, 85, 0.28);
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid rgba(227, 184, 85, 0.6);
+    outline-offset: 2px;
+  }
+}
+
+/* ─── TEKA custom utilities ─────────────────────────────────────────────────── */
+
+.font-display {
+  font-family: var(--font-space-grotesk), var(--font-inter), sans-serif;
+  letter-spacing: -0.02em;
+}
+
+.mono-label {
+  font-family: var(--font-plex-mono), monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  font-size: 0.65rem;
+}
+
+.gold-text {
+  background: linear-gradient(105deg, #b08d3e 0%, #e3b855 30%, #f7e7b0 50%, #e3b855 70%, #b08d3e 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: gold-sheen 7s linear infinite;
+}
+
+.silver-text {
+  background: linear-gradient(105deg, #6e7683 0%, #c8cdd6 45%, #f2f2f0 55%, #9ba3ae 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes gold-sheen {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.glass {
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.glass-gold {
+  background: linear-gradient(160deg, rgba(227, 184, 85, 0.08), rgba(227, 184, 85, 0.015));
+  border: 1px solid rgba(227, 184, 85, 0.18);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+.grid-backdrop {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 90% 70% at 50% 30%, black 30%, transparent 75%);
+}
+
+.hairline {
+  background: linear-gradient(90deg, transparent, rgba(227, 184, 85, 0.4), transparent);
+  height: 1px;
+}
+
+.card-hover {
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.45s ease, box-shadow 0.45s ease;
+}
+.card-hover:hover {
+  transform: translateY(-3px);
+  border-color: rgba(227, 184, 85, 0.35);
+  box-shadow: 0 18px 50px -20px rgba(227, 184, 85, 0.18);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #0a0a0c;
+}
+::-webkit-scrollbar-thumb {
+  background: #23232a;
+  border-radius: 8px;
+  border: 2px solid #0a0a0c;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(227, 184, 85, 0.4);
+}
+
+.scroll-area-styled {
+  scrollbar-width: thin;
+  scrollbar-color: #23232a #0a0a0c;
+}
+
+/* Status pulse */
+@keyframes teka-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+.pulse-dot {
+  animation: teka-pulse 2.2s ease-in-out infinite;
+}
+
+/* Scan line for command center */
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(400%); }
+}
+
+/* ─── TEKA cosmic layer ─────────────────────────────────────────────────────── */
+
+/* Drifting nebula fields behind everything (transform-only, GPU friendly) */
+@keyframes nebula-drift {
+  0%   { transform: translate3d(-2.5%, -1.5%, 0) scale(1); }
+  50%  { transform: translate3d(2.5%, 2%, 0) scale(1.06); }
+  100% { transform: translate3d(-2.5%, -1.5%, 0) scale(1); }
+}
+@keyframes nebula-drift-alt {
+  0%   { transform: translate3d(2%, 2%, 0) scale(1.04); }
+  50%  { transform: translate3d(-2%, -2.5%, 0) scale(1); }
+  100% { transform: translate3d(2%, 2%, 0) scale(1.04); }
+}
+.nebula {
+  position: fixed;
+  inset: -12%;
+  z-index: -2;
+  pointer-events: none;
+  will-change: transform;
+}
+.nebula-a {
+  background:
+    radial-gradient(42% 34% at 22% 18%, rgba(227, 184, 85, 0.05), transparent 68%),
+    radial-gradient(50% 42% at 84% 30%, rgba(120, 130, 150, 0.045), transparent 70%);
+  animation: nebula-drift 46s ease-in-out infinite;
+}
+.nebula-b {
+  background:
+    radial-gradient(46% 38% at 70% 85%, rgba(227, 184, 85, 0.045), transparent 70%),
+    radial-gradient(38% 30% at 12% 78%, rgba(176, 141, 62, 0.05), transparent 68%);
+  animation: nebula-drift-alt 58s ease-in-out infinite;
+}
+
+/* Emblem float — zero-G hover */
+@keyframes emblem-float {
+  0%, 100% { transform: translateY(-5px); }
+  50%      { transform: translateY(6px); }
+}
+.emblem-float {
+  animation: emblem-float 7s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Orbit rings — 3D ellipses circling the emblem */
+@keyframes orbit-spin {
+  from { transform: translate(-50%, -50%) rotateX(74deg) rotateZ(0deg); }
+  to   { transform: translate(-50%, -50%) rotateX(74deg) rotateZ(360deg); }
+}
+@keyframes orbit-spin-rev {
+  from { transform: translate(-50%, -50%) rotateX(74deg) rotateZ(360deg); }
+  to   { transform: translate(-50%, -50%) rotateX(74deg) rotateZ(0deg); }
+}
+.orbit-ring {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border: 1px solid rgba(227, 184, 85, 0.34);
+  border-radius: 50%;
+  will-change: transform;
+}
+.orbit-ring::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #f0d48a;
+  box-shadow: 0 0 12px 3px rgba(240, 212, 138, 0.7);
+}
+.ignition-ring-a {
+  width: 300px;
+  height: 300px;
+  animation: orbit-spin 9s linear infinite;
+}
+.ignition-ring-b {
+  width: 388px;
+  height: 388px;
+  border-color: rgba(155, 163, 174, 0.16);
+  animation: orbit-spin-rev 15s linear infinite;
+}
+.ignition-ring-b::before {
+  background: #c8cdd6;
+  box-shadow: 0 0 10px 2px rgba(200, 205, 214, 0.55);
+}
+
+/* Page-level orbit rings (hero emblem) — fixed sizes (percent of a 0-size parent collapses) */
+.hero-ring-a { width: 330px; height: 330px; animation: orbit-spin 12s linear infinite; }
+.hero-ring-b { width: 470px; height: 470px; border-color: rgba(155, 163, 174, 0.22); animation: orbit-spin-rev 19s linear infinite; }
+@media (max-width: 640px) {
+  .hero-ring-a { width: 240px; height: 240px; }
+  .hero-ring-b { width: 330px; height: 330px; }
+}
+
+/* Emblem halo glow */
+.emblem-halo {
+  background: radial-gradient(closest-side, rgba(227, 184, 85, 0.16), rgba(227, 184, 85, 0.05) 55%, transparent 75%);
+  filter: blur(6px);
+}
+
+/* Twinkling star (pure CSS fallback layer) */
+@keyframes star-twinkle {
+  0%, 100% { opacity: 0.15; }
+  50%      { opacity: 0.9; }
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: #d6dce8;
+  animation: star-twinkle var(--twinkle-duration, 4s) ease-in-out infinite;
+  animation-delay: var(--twinkle-delay, 0s);
+}
+.star-gold { background: #e8c774; }
+
+/* Shooting star streak */
+@keyframes shooting-star {
+  0%   { transform: translate3d(0, 0, 0) rotate(var(--shooting-angle, 24deg)); opacity: 0; }
+  4%   { opacity: 1; }
+  16%  { transform: translate3d(var(--shooting-distance, 46vw), calc(var(--shooting-distance, 46vw) * 0.45), 0) rotate(var(--shooting-angle, 24deg)); opacity: 0; }
+  100% { transform: translate3d(var(--shooting-distance, 46vw), calc(var(--shooting-distance, 46vw) * 0.45), 0) rotate(var(--shooting-angle, 24deg)); opacity: 0; }
+}
+.shooting-star {
+  position: absolute;
+  width: 150px;
+  height: 1.5px;
+  background: linear-gradient(90deg, rgba(240, 212, 138, 0.9), rgba(240, 212, 138, 0));
+  border-radius: 999px;
+  filter: drop-shadow(0 0 6px rgba(240, 212, 138, 0.8));
+  animation: shooting-star var(--shooting-duration, 9s) linear infinite;
+  animation-delay: var(--shooting-delay, 0s);
+  opacity: 0;
+  will-change: transform, opacity;
+  pointer-events: none;
+}
+
+/* Slow spin for decorative rings/discs */
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+.spin-slow { animation: spin-slow 32s linear infinite; }
+
+/* Counter-rotation + slower variants (ignition glyph rings) */
+@keyframes spin-rev {
+  to { transform: rotate(-360deg); }
+}
+.spin-cw-30 { animation: spin-slow 30s linear infinite; }
+.spin-ccw-46 { animation: spin-rev 46s linear infinite; }
+.spin-cw-70 { animation: spin-slow 70s linear infinite; }
+
+/* Ignition nebula atmosphere — slow breathing cosmic clouds */
+@keyframes nebula-drift {
+  0%   { transform: translate3d(-2%, 1.5%, 0) scale(1); }
+  50%  { transform: translate3d(2.5%, -2%, 0) scale(1.07); }
+  100% { transform: translate3d(-2%, 1.5%, 0) scale(1); }
+}
+@keyframes nebula-breathe {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 1; }
+}
+.nebula {
+  position: absolute;
+  inset: -14%;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.nebula-a {
+  background: radial-gradient(ellipse 52% 40% at 30% 36%, rgba(227, 184, 85, 0.10), transparent 68%);
+  animation:
+    nebula-drift 26s ease-in-out infinite,
+    nebula-breathe 12s ease-in-out infinite;
+}
+.nebula-b {
+  background: radial-gradient(ellipse 46% 36% at 72% 66%, rgba(148, 163, 184, 0.08), transparent 70%);
+  animation:
+    nebula-drift 34s ease-in-out infinite reverse,
+    nebula-breathe 15s ease-in-out infinite 1.8s;
+}
+
+/* Reduced motion — honor user preference globally */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .gold-text {
+    animation: none;
+  }
+}
