@@ -1,3 +1,6 @@
+# robots.txt — TEKA
+# https://teka-web-beta.vercel.app
+
 User-agent: *
 Allow: /
 
