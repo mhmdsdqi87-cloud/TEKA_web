@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useRouter, type RouteId } from "@/lib/teka/router";
-import { SOCIALS, TEAM, TEKA } from "@/lib/teka/config";
+import { SOCIALS, TEAM, TEKA, NEXUS } from "@/lib/teka/config";
 import { Github, Send, Twitter, Mail, ArrowUpRight } from "lucide-react";
 
 const FOOTER_NAV: Array<{ id: RouteId; label: string }> = [
@@ -24,7 +24,7 @@ export function TekaFooter() {
 
   return (
     <footer className="mt-auto border-t border-white/[0.06] bg-[#070708]" role="contentinfo">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-8 pt-14 md:pt-16">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pt-14 md:pt-16 pb-[max(2rem,env(safe-area-inset-bottom))]">
         <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
           {/* Brand */}
           <div>
@@ -96,6 +96,16 @@ export function TekaFooter() {
                   </button>
                 </li>
               ))}
+              <li>
+                <a
+                  href={NEXUS.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-gold-bright"
+                >
+                  TEKA NEXUS <ArrowUpRight className="h-3 w-3" />
+                </a>
+              </li>
               <li>
                 <a
                   href="https://github.com/mhmdsdqi87-cloud/TEKA_web"

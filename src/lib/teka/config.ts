@@ -15,6 +15,27 @@ export const TEKA = {
   whitepaperVersion: "v1.0",
 } as const;
 
+/**
+ * TEKA NEXUS — the live TEKA academy platform.
+ * Facts mirror the product's own published metadata (teka-nexus.vercel.app).
+ */
+export const NEXUS = {
+  name: "TEKA NEXUS",
+  nativeName: "تکا نکسوس",
+  url: "https://teka-nexus.vercel.app/",
+  tagline: "Learn Free. Team Up. Build Real.",
+  description:
+    "The TEKA academy, live now: free Python and web programming courses plus a social network for finding teammates and building real projects — with quizzes and certificates along the way.",
+  features: [
+    "Python Academy",
+    "Web Academy",
+    "Teammate Matching",
+    "Real Projects",
+    "Quizzes & Certificates",
+    "100% Free",
+  ],
+} as const;
+
 export const SOCIALS = {
   telegram: "https://t.me/TEKAOfficial",
   x: "https://x.com/TEKAweb3",

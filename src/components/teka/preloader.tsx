@@ -112,9 +112,13 @@ function CosmosField({
     let lastMeteor = 0;
     let nextMeteorIn = 1500;
     let last = performance.now();
+    let seededW = 0;
+    let seededH = 0;
 
     const seed = (w: number, h: number) => {
       const count = Math.min(Math.round((w * h) / 6200), 240);
+      seededW = w;
+      seededH = h;
       stars = Array.from({ length: count }, (_, i) => ({
         angle: Math.random() * Math.PI * 2,
         radius: (0.05 + Math.random() * 0.95) * Math.max(w, h) * 0.8,
@@ -241,6 +245,12 @@ function CosmosField({
     }
 
     const onResize = () => {
+      // Mobile Chrome fires resize when the URL bar collapses/expands during
+      // scroll — re-seeding on those events makes stars jump. Only re-seed on
+      // a real width change (rotation, split screen, real keyboard).
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      if (Math.abs(w - seededW) < 2 && Math.abs(h - seededH) < 8) return;
       resize();
       if (reduced) drawStatic();
     };
@@ -769,7 +779,7 @@ export function Preloader() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.3, duration: 0.6 }}
-          className="absolute bottom-14 right-5 z-20 rounded-md border border-white/10 px-3 py-1.5 font-mono text-[9px] tracking-[0.3em] text-white/45 transition-colors hover:border-gold/40 hover:text-gold-bright sm:right-8"
+          className="absolute right-5 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-20 rounded-md border border-white/10 px-3 py-1.5 font-mono text-[9px] tracking-[0.3em] text-white/45 transition-colors hover:border-gold/40 hover:text-gold-bright active:border-gold/40 active:text-gold-bright sm:bottom-14 sm:right-8"
           aria-label="Skip the loading intro"
         >
           SKIP →

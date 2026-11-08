@@ -8,14 +8,14 @@ import { TokenomicsChart } from "@/components/teka/tokenomics-chart";
 import { RoadmapTimeline } from "@/components/teka/roadmap-timeline";
 import { SectionHeading } from "@/components/teka/primitives";
 import { useRouter } from "@/lib/teka/router";
-import { FAQ } from "@/lib/teka/config";
+import { FAQ, NEXUS } from "@/lib/teka/config";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { ArrowRight, ShieldCheck, Zap, Layers, Globe2, Eye } from "lucide-react";
+import { ArrowRight, ShieldCheck, Zap, Layers, Globe2, Eye, ArrowUpRight } from "lucide-react";
 
 const PILLARS = [
   {
@@ -89,6 +89,45 @@ export function HomeView() {
             ))}
           </div>
         </div>
+      </section>
+
+      {/* TEKA NEXUS — live product strip */}
+      <section className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 md:py-12" aria-label="TEKA Nexus — live product">
+        <motion.a
+          href={NEXUS.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          initial={{ opacity: 0, y: 22 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="group glass-gold relative flex flex-col items-start gap-4 overflow-hidden rounded-2xl px-6 py-5 transition-all duration-500 hover:border-gold/50 hover:shadow-[0_18px_60px_-24px_rgba(227,184,85,0.35)] active:scale-[0.995] sm:flex-row sm:items-center sm:gap-6"
+          aria-label={`Open ${NEXUS.name} — the TEKA academy (new tab)`}
+        >
+          <div
+            className="absolute inset-0 opacity-60"
+            style={{ background: "radial-gradient(50% 120% at 8% 50%, rgba(227,184,85,0.10), transparent 60%)" }}
+            aria-hidden="true"
+          />
+          <span className="relative inline-flex shrink-0 items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/[0.07] px-3 py-1">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 pulse-dot" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+            </span>
+            <span className="mono-label text-emerald-300">Live</span>
+          </span>
+          <div className="relative min-w-0 flex-1">
+            <p className="font-display text-base font-semibold text-foreground sm:text-lg">
+              <span className="gold-text">TEKA NEXUS</span>
+              <span className="mx-2 text-muted-foreground/50" aria-hidden>·</span>
+              <span className="text-muted-foreground">Our free programming academy is live — Python, web, teammates &amp; certificates.</span>
+            </p>
+          </div>
+          <span className="relative inline-flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-5 py-2.5 text-sm font-semibold text-black transition-transform duration-300 group-hover:scale-[1.03]">
+            Explore
+            <ArrowUpRight className="h-4 w-4" aria-hidden />
+          </span>
+        </motion.a>
       </section>
 
       {/* Ecosystem map */}

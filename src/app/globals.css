@@ -113,13 +113,27 @@
   }
   html {
     scroll-behavior: smooth;
+    /* Mobile Chrome: kill gray tap flash + horizontal panning from decorative layers */
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: clip;
   }
   body {
     @apply bg-background text-foreground;
+    overflow-x: clip;
     background-image:
       radial-gradient(1200px 600px at 85% -10%, rgba(227, 184, 85, 0.06), transparent 60%),
       radial-gradient(900px 500px at -10% 110%, rgba(155, 163, 174, 0.05), transparent 55%);
-    background-attachment: fixed;
+    /* NOTE: no background-attachment:fixed — it forces full-canvas repaints on
+       mobile Chrome (scroll jank) and is ignored on iOS. The fixed cosmic
+       atmosphere is provided by the .nebula-page layers instead. */
+  }
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  textarea {
+    touch-action: manipulation;
   }
   ::selection {
     background: rgba(227, 184, 85, 0.28);
@@ -420,6 +434,31 @@
     nebula-breathe 15s ease-in-out infinite 1.8s;
 }
 
+/* Page-level fixed nebula (layout.tsx) — position:fixed so it never
+   expands the document box (the old absolute + inset:-14% version caused
+   horizontal overflow on mobile Chrome) and always covers the viewport. */
+.nebula-page {
+  position: fixed;
+  inset: -12%;
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Mobile perf: soften backdrop blur — big blur radii are GPU-expensive
+   on mid-range Android Chrome and cause scroll jank. */
+@media (max-width: 640px) {
+  .glass,
+  .glass-gold {
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+  }
+}
+
+/* Safe-area helper for full-bleed chrome (notches, gesture bars) */
+.pb-safe {
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+}
+
 /* Reduced motion — honor user preference globally */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -436,3 +475,5 @@
     animation: none;
   }
 }
+
+/* teka:css-verification-marker */

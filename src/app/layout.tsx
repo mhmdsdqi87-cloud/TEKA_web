@@ -100,6 +100,7 @@ export const viewport: Viewport = {
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
+  viewportFit: "cover",
 };
 
 /** Structured data — Organization + WebSite (schema.org). */
@@ -152,9 +153,9 @@ export default function RootLayout({
       <body
         className={`${spaceGrotesk.variable} ${inter.variable} ${plexMono.variable} antialiased bg-background text-foreground font-sans min-h-screen flex flex-col`}
       >
-        {/* Cosmic nebula layers — slow-drifting atmosphere behind the whole platform */}
-        <div className="nebula nebula-a" aria-hidden="true" />
-        <div className="nebula nebula-b" aria-hidden="true" />
+        {/* Cosmic nebula layers — fixed atmosphere behind the whole platform */}
+        <div className="nebula nebula-page nebula-a" aria-hidden="true" />
+        <div className="nebula nebula-page nebula-b" aria-hidden="true" />
         {children}
         <JsonLd />
         <Toaster />

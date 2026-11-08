@@ -35,12 +35,16 @@ export function AtmosphereCanvas({ density = 0.00008 }: { density?: number }) {
     let stars: Star[] = [];
     let meteors: Meteor[] = [];
     let nextMeteorAt = 0;
+    let seededW = 0;
+    let seededH = 0;
 
     const resize = () => {
       const { clientWidth: w, clientHeight: h } = canvas;
       canvas.width = w * dpr;
       canvas.height = h * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      seededW = w;
+      seededH = h;
 
       const count = Math.min(Math.floor(w * h * density), 90);
       particles = Array.from({ length: count }, () => ({
@@ -190,6 +194,11 @@ export function AtmosphereCanvas({ density = 0.00008 }: { density?: number }) {
     }
 
     const onResize = () => {
+      // Mobile Chrome fires resize when the URL bar hides/shows during scroll.
+      // Re-seeding on every one of those makes the starfield visibly jump.
+      // Only re-seed on a REAL viewport width change (rotation, split screen).
+      const { clientWidth: w, clientHeight: h } = canvas;
+      if (Math.abs(w - seededW) < 2 && Math.abs(h - seededH) < 8) return;
       resize();
       if (reduced) draw(0);
     };

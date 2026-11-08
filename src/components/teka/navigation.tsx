@@ -46,6 +46,21 @@ export function TekaNavigation() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Mobile menu hygiene: lock background scroll + close on Escape.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
+
   // Close the mobile menu as part of the navigation action itself (no effect needed).
   const go = (id: RouteId) => () => {
     setOpen(false);
@@ -138,7 +153,7 @@ export function TekaNavigation() {
             transition={{ duration: 0.3, ease: "easeOut" }}
             className="lg:hidden overflow-hidden border-b border-white/[0.06] bg-background/95 backdrop-blur-xl"
           >
-            <div className="px-4 py-4 grid gap-1">
+            <div className="grid gap-1 px-4 pt-4 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
               {NAV_ITEMS.map((item) => (
                 <button
                   key={item.id}
