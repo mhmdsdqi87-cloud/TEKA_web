@@ -7,6 +7,7 @@ import { EcosystemMap } from "@/components/teka/ecosystem-map";
 import { TokenomicsChart } from "@/components/teka/tokenomics-chart";
 import { RoadmapTimeline } from "@/components/teka/roadmap-timeline";
 import { NexusTrailer } from "@/components/teka/nexus-trailer";
+import { NexusFleet } from "@/components/teka/nexus-fleet";
 import { SectionHeading } from "@/components/teka/primitives";
 import { useRouter } from "@/lib/teka/router";
 import { FAQ } from "@/lib/teka/config";
@@ -94,6 +95,9 @@ export function HomeView() {
 
       {/* TEKA NEXUS — deep-space transmission (cinematic showcase) */}
       <NexusTrailer />
+
+      {/* TEKA NEXUS — docking bay: fleet registry, alien signals, stats */}
+      <NexusFleet />
 
       {/* Ecosystem map */}
       <section className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16 md:py-24" aria-label="Ecosystem map">

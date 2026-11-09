@@ -1,20 +1,24 @@
 "use client";
 
 /**
- * TEKA NEXUS — Deep-Space Transmission
+ * TEKA NEXUS — Deep-Space Transmission (Galactic Edition)
  *
  * A cinematic, looping "in-space advertisement" for the live TEKA Nexus academy.
- * One canvas draws the whole scene: warp starfield, a ringed planet, the
- * Mothership Nexus-01, a flying saucer (crewed, naturally), alien pods and
- * comets — choreographed on a 26s story loop with synced HUD captions.
+ * One canvas paints the whole galaxy: pre-rendered spiral galaxy + black hole
+ * + ringed planet sprites, a warp starfield, asteroid belt, rotating space
+ * station, jellyfish alien, escorted Mothership Nexus-01, a saucer flyby with
+ * its crew, alien pods, a wormhole and comets — choreographed on a 26s story
+ * loop with synced HUD captions and a boarding-pass CTA.
  *
  * Engineering notes (mobile-Chrome hardened):
- *  - DPR capped (1.5 on small screens / 2 on desktop), entity counts scale down
- *  - Single rAF loop; fully paused when off-screen (IntersectionObserver) or tab hidden
+ *  - DPR capped (1.5 small screens / 2 desktop), entity counts scale down
+ *  - Static deep-sky objects (galaxy, black hole, planet) are pre-rendered to
+ *    offscreen canvases once per resize — per-frame cost is a single drawImage
+ *  - Single rAF loop; fully paused off-screen (IntersectionObserver) or hidden tab
  *  - prefers-reduced-motion renders one static composed frame, zero animation
- *  - Transform/opacity-only CSS animations for the HTML overlay
  *
- * Honesty: every claim mirrors src/lib/teka/config.ts — Nexus is a real live product.
+ * Honesty: every factual claim mirrors src/lib/teka/config.ts — Nexus is a real
+ * live product. The aliens, ships and wormholes are the marketing department.
  */
 
 import { memo, useCallback, useEffect, useRef, useState } from "react";
@@ -28,6 +32,7 @@ import {
   Radar,
   Rocket,
   Sparkles,
+  Ticket,
   Users2,
 } from "lucide-react";
 import { NEXUS } from "@/lib/teka/config";
@@ -38,11 +43,11 @@ const LOOP = 26; // seconds
 const PHASES = [0, 5, 11, 16, 21] as const;
 
 const PHASE_CAPTIONS = [
-  "SOMEWHERE BEYOND THE STARS… A SIGNAL IS SEARCHING FOR MINDS LIKE YOURS",
-  "MOTHERSHIP NEXUS-01 HAS ENTERED ORBIT — THE ACADEMY IS LIVE",
-  "ALIEN LIFE CONFIRMED. THEY CROSSED THE VOID TO LEARN. FREE.",
+  "SOMEWHERE BEYOND THE STARS… A GALAXY IS SEARCHING FOR MINDS LIKE YOURS",
+  "MOTHERSHIP NEXUS-01 HAS ENTERED ORBIT — ESCORTS DEPLOYED",
+  "ALIEN LIFE CONFIRMED — THE JELLYFISH NEBULA SAYS HELLO",
   "EVERY CIVILIZATION BEGINS BY LEARNING. YOURS BEGINS HERE.",
-  "BOARDING GATES OPEN — WARP DRIVE CHARGED",
+  "BOARDING GATES OPEN — WORMHOLE LOCKED ON YOUR POSITION",
 ] as const;
 
 const TICKER = [
@@ -65,8 +70,18 @@ const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 /* ── the cosmos engine ───────────────────────────────────────────────────── */
 
 type WStar = { x: number; y: number; z: number; pz: number; c: string };
-type Pod = { x: number; y: number; r: number; vy: number; ph: number };
+type Pod = { x: number; y: number; r: number; vy: number; ph: number; tone: string };
 type Comet = { x: number; y: number; vx: number; vy: number; life: number; max: number };
+type Asteroid = {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rot: number;
+  vr: number;
+  r: number;
+  pts: number[];
+};
 
 /** Warp intensity over the loop — drives starfield speed + engine flames. */
 function boostAt(lt: number): number {
@@ -83,6 +98,15 @@ function boostAt(lt: number): number {
     const k = clamp((lt - 21) / 2.2, 0, 1);
     return 0.3 + 1.5 * Math.sin(k * Math.PI);
   }
+  return 0.12;
+}
+
+/** Wormhole glow envelope — wakes up in phase 3, flares when the ship dives in. */
+function wormholeAt(lt: number): number {
+  if (lt < 16) return 0.12;
+  if (lt < 21) return 0.3;
+  if (lt < 22.6) return 0.3 + 0.7 * Math.min(1, (lt - 21) / 1.2);
+  if (lt < 25) return Math.max(0.12, 1 - (lt - 22.6) / 1.4);
   return 0.12;
 }
 
@@ -110,22 +134,178 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
     const dpr = Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2);
     const N_STARS = small ? 150 : 240;
     const N_PODS = small ? 2 : 4;
+    const N_ASTEROIDS = small ? 7 : 13;
 
     let w = 0;
     let h = 0;
     let cx = 0;
     let cy = 0;
     let scale = 0;
-    let shipScale = small ? 0.72 : 1;
+    const shipScale = small ? 0.72 : 1;
     let parkX = 0;
     let parkY = 0;
+    let wormX = 0;
 
     let stars: WStar[] = [];
     let pods: Pod[] = [];
     let comets: Comet[] = [];
+    let asteroids: Asteroid[] = [];
     let nextCometAt = 0;
     let seededW = 0;
     let seededH = 0;
+
+    // pre-rendered deep-sky sprites
+    let galaxySprite: HTMLCanvasElement | null = null;
+    let galaxySize = 0;
+    let holeSprite: HTMLCanvasElement | null = null;
+    let holeSize = 0;
+    let planetSprite: HTMLCanvasElement | null = null;
+    let planetR = 0;
+    let planetW = 0;
+
+    const makeSprite = (wCss: number, hCss: number) => {
+      const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.ceil(wCss * dpr));
+      c.height = Math.max(1, Math.ceil(hCss * dpr));
+      const g = c.getContext("2d");
+      if (!g) return null;
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { c, g };
+    };
+
+    const buildGalaxy = () => {
+      const S = Math.round(clamp(scale * 1.1, 220, 430));
+      const sp = makeSprite(S, S);
+      if (!sp) return;
+      const { c, g } = sp;
+      const cxy = S / 2;
+      let grad = g.createRadialGradient(cxy, cxy, 0, cxy, cxy, S * 0.5);
+      grad.addColorStop(0, "rgba(240,230,200,0.10)");
+      grad.addColorStop(0.5, "rgba(227,184,85,0.05)");
+      grad.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = grad;
+      g.fillRect(0, 0, S, S);
+      for (let arm = 0; arm < 2; arm++) {
+        for (let i = 0; i < 170; i++) {
+          const t = i / 170;
+          const ang = arm * Math.PI + t * 3.8;
+          const r = 3 + Math.pow(t, 0.8) * S * 0.46;
+          const jitter = (Math.random() - 0.5) * 6;
+          const x = cxy + Math.cos(ang) * r + jitter;
+          const y = cxy + Math.sin(ang) * r * 0.62 + jitter; // perspective tilt
+          const rr = 0.5 + Math.random() * 1.1;
+          const fade = (1 - t) * 0.55 + 0.08;
+          const gold = Math.random() < 0.22;
+          const teal = Math.random() < 0.06;
+          g.fillStyle = gold
+            ? `rgba(232,199,116,${fade})`
+            : teal
+              ? `rgba(126,222,190,${fade * 0.8})`
+              : `rgba(214,220,232,${fade * 0.85})`;
+          g.beginPath();
+          g.arc(x, y, rr, 0, Math.PI * 2);
+          g.fill();
+        }
+      }
+      grad = g.createRadialGradient(cxy, cxy, 0, cxy, cxy, S * 0.1);
+      grad.addColorStop(0, "rgba(255,244,214,0.9)");
+      grad.addColorStop(0.4, "rgba(240,212,138,0.35)");
+      grad.addColorStop(1, "rgba(240,212,138,0)");
+      g.fillStyle = grad;
+      g.beginPath();
+      g.arc(cxy, cxy, S * 0.1, 0, Math.PI * 2);
+      g.fill();
+      galaxySprite = c;
+      galaxySize = S;
+    };
+
+    const buildBlackHole = () => {
+      const B = Math.round(clamp(scale * 0.42, 110, 190));
+      const sp = makeSprite(B, B);
+      if (!sp) return;
+      const { c, g } = sp;
+      const cc = B / 2;
+      g.save();
+      g.translate(cc, cc);
+      g.rotate(-0.35);
+      const disk = (ry: number, alpha: number, width: number) => {
+        g.strokeStyle = `rgba(240,212,138,${alpha})`;
+        g.lineWidth = width;
+        g.beginPath();
+        g.ellipse(0, 0, B * 0.42, ry, 0, 0, Math.PI * 2);
+        g.stroke();
+      };
+      disk(B * 0.13, 0.3, B * 0.09);
+      disk(B * 0.1, 0.55, B * 0.05);
+      g.restore();
+      const grad = g.createRadialGradient(cc, cc, B * 0.12, cc, cc, B * 0.24);
+      grad.addColorStop(0, "rgba(0,0,0,1)");
+      grad.addColorStop(0.75, "rgba(0,0,0,1)");
+      grad.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = grad;
+      g.beginPath();
+      g.arc(cc, cc, B * 0.24, 0, Math.PI * 2);
+      g.fill();
+      g.strokeStyle = "rgba(255,244,214,0.85)";
+      g.lineWidth = 1.4;
+      g.shadowColor = "rgba(240,212,138,0.9)";
+      g.shadowBlur = 10;
+      g.beginPath();
+      g.arc(cc, cc, B * 0.155, 0, Math.PI * 2);
+      g.stroke();
+      g.shadowBlur = 0;
+      holeSprite = c;
+      holeSize = B;
+    };
+
+    const buildPlanet = () => {
+      const R = Math.round(clamp(scale * 0.3, 46, 140));
+      const S = Math.ceil(R * 4.1);
+      const sp = makeSprite(S, S);
+      if (!sp) return;
+      const { c, g } = sp;
+      const cc = S / 2;
+      g.save();
+      g.translate(cc, cc);
+      g.rotate(-0.42);
+      g.strokeStyle = "rgba(227,184,85,0.2)";
+      g.lineWidth = R * 0.15;
+      g.beginPath();
+      g.ellipse(0, 0, R * 1.85, R * 0.5, 0, Math.PI * 1.02, Math.PI * 1.98);
+      g.stroke();
+      g.restore();
+      const grad = g.createRadialGradient(cc - R * 0.45, cc - R * 0.5, R * 0.1, cc, cc, R);
+      grad.addColorStop(0, "#3d4049");
+      grad.addColorStop(0.6, "#17181d");
+      grad.addColorStop(1, "#0a0a0e");
+      g.beginPath();
+      g.arc(cc, cc, R, 0, Math.PI * 2);
+      g.fillStyle = grad;
+      g.fill();
+      g.save();
+      g.beginPath();
+      g.arc(cc, cc, R, 0, Math.PI * 2);
+      g.clip();
+      const rim = g.createLinearGradient(cc - R, cc - R, cc + R * 0.4, cc + R);
+      rim.addColorStop(0, "rgba(227,184,85,0.5)");
+      rim.addColorStop(0.4, "rgba(227,184,85,0.05)");
+      rim.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = rim;
+      g.fillRect(cc - R, cc - R, R * 2, R * 2);
+      g.restore();
+      g.save();
+      g.translate(cc, cc);
+      g.rotate(-0.42);
+      g.strokeStyle = "rgba(227,184,85,0.42)";
+      g.lineWidth = R * 0.15;
+      g.beginPath();
+      g.ellipse(0, 0, R * 1.85, R * 0.5, 0, Math.PI * 0.02, Math.PI * 0.98);
+      g.stroke();
+      g.restore();
+      planetSprite = c;
+      planetR = R;
+      planetW = S;
+    };
 
     const respawnStar = (s: WStar, init = false) => {
       let x = 0;
@@ -143,6 +323,25 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
       s.c = g < 0.12 ? "232,199,116" : g < 0.2 ? "126,222,190" : "214,220,232";
     };
 
+    const makeAsteroid = (randomY: boolean): Asteroid => {
+      const r = 3 + Math.random() * 7;
+      const pts: number[] = [];
+      const n = 8;
+      for (let i = 0; i < n; i++) {
+        pts.push(r * (0.7 + Math.random() * 0.55));
+      }
+      return {
+        x: Math.random() * w,
+        y: randomY ? Math.random() * h : -20,
+        vx: (Math.random() - 0.5) * 0.24,
+        vy: 0.04 + Math.random() * 0.12,
+        rot: Math.random() * Math.PI * 2,
+        vr: (Math.random() - 0.5) * 0.01,
+        r,
+        pts,
+      };
+    };
+
     const resize = () => {
       w = canvas.clientWidth;
       h = canvas.clientHeight;
@@ -152,10 +351,11 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
       cx = w / 2;
       cy = h * 0.46;
       scale = Math.min(cx, cy);
-      // park the mothership in the upper-left corridor — planet owns the right,
-      // HUD badges own the exact top-center, copy owns the middle.
+      // Mothership parks in the upper-left corridor (emerging from the galaxy):
+      // galaxy owns far left, planet owns the right, HUD badges own top-center.
       parkX = w < 640 ? w * 0.3 : w * 0.26;
       parkY = Math.max(h * 0.2, 116);
+      wormX = w * 0.88;
 
       stars = [];
       for (let i = 0; i < N_STARS; i++) {
@@ -169,15 +369,22 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
         r: 13 + Math.random() * 8,
         vy: -(0.1 + Math.random() * 0.14),
         ph: Math.random() * Math.PI * 2,
+        tone: i % 2 === 0 ? "#5bd68d" : "#5bd6c9",
       }));
+      asteroids = Array.from({ length: N_ASTEROIDS }, () => makeAsteroid(true));
+
+      buildGalaxy();
+      buildBlackHole();
+      buildPlanet();
+
       seededW = w;
       seededH = h;
     };
 
     /* ── shared drawing helpers ── */
 
-    const drawAlien = (x: number, y: number, s: number) => {
-      ctx.fillStyle = "#5bd68d";
+    const drawAlien = (x: number, y: number, s: number, tone = "#5bd68d") => {
+      ctx.fillStyle = tone;
       ctx.beginPath();
       ctx.ellipse(x, y, s * 0.62, s * 0.72, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -188,7 +395,7 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
       ctx.beginPath();
       ctx.ellipse(x + s * 0.26, y - s * 0.05, s * 0.17, s * 0.28, 0.28, 0, Math.PI * 2);
       ctx.fill();
-      ctx.strokeStyle = "#5bd68d";
+      ctx.strokeStyle = tone;
       ctx.lineWidth = Math.max(1, s * 0.09);
       ctx.beginPath();
       ctx.moveTo(x - s * 0.22, y - s * 0.62);
@@ -198,7 +405,7 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
       ctx.moveTo(x + s * 0.22, y - s * 0.62);
       ctx.lineTo(x + s * 0.38, y - s * 0.95);
       ctx.stroke();
-      ctx.fillStyle = "#8af0b4";
+      ctx.fillStyle = "#aef7cc";
       ctx.beginPath();
       ctx.arc(x - s * 0.38, y - s * 0.98, s * 0.1, 0, Math.PI * 2);
       ctx.fill();
@@ -207,63 +414,78 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
       ctx.fill();
     };
 
-    const drawPlanet = (t: number) => {
-      const R = clamp(scale * 0.3, 46, 140);
-      const px = Math.min(w * 0.82, w - R * 1.15);
-      const py = Math.max(h * 0.14, R * 0.9);
+    const drawJelly = (x: number, y: number, t: number, alpha: number) => {
+      if (alpha <= 0.01) return;
       ctx.save();
-      ctx.translate(px, py);
-      ctx.rotate(-0.42);
-      ctx.strokeStyle = "rgba(227,184,85,0.2)";
-      ctx.lineWidth = R * 0.15;
+      ctx.globalAlpha = alpha;
+      ctx.translate(x, y);
+      const pulse = 1 + Math.sin(t * 0.0012) * 0.08;
+      const grad = ctx.createRadialGradient(0, -4, 2, 0, 0, 20 * pulse);
+      grad.addColorStop(0, "rgba(196,150,240,0.5)");
+      grad.addColorStop(0.7, "rgba(150,110,210,0.22)");
+      grad.addColorStop(1, "rgba(150,110,210,0)");
+      ctx.fillStyle = grad;
       ctx.beginPath();
-      ctx.ellipse(0, 0, R * 1.85, R * 0.5, 0, Math.PI * 1.02, Math.PI * 1.98);
-      ctx.stroke();
-      ctx.restore();
-
-      const g = ctx.createRadialGradient(px - R * 0.45, py - R * 0.5, R * 0.1, px, py, R);
-      g.addColorStop(0, "#3d4049");
-      g.addColorStop(0.6, "#17181d");
-      g.addColorStop(1, "#0a0a0e");
-      ctx.beginPath();
-      ctx.arc(px, py, R, 0, Math.PI * 2);
-      ctx.fillStyle = g;
+      ctx.arc(0, 0, 20 * pulse, Math.PI, 0);
+      ctx.quadraticCurveTo(20 * pulse, 6, 0, 8);
+      ctx.quadraticCurveTo(-20 * pulse, 6, -20 * pulse, 0);
       ctx.fill();
-
-      ctx.save();
+      // a friendly face — the jellyfish is on our side
+      ctx.fillStyle = "rgba(20,10,30,0.85)";
       ctx.beginPath();
-      ctx.arc(px, py, R, 0, Math.PI * 2);
-      ctx.clip();
-      const rim = ctx.createLinearGradient(px - R, py - R, px + R * 0.4, py + R);
-      rim.addColorStop(0, "rgba(227,184,85,0.5)");
-      rim.addColorStop(0.4, "rgba(227,184,85,0.05)");
-      rim.addColorStop(1, "rgba(0,0,0,0)");
-      ctx.fillStyle = rim;
-      ctx.fillRect(px - R, py - R, R * 2, R * 2);
-      ctx.restore();
-
-      ctx.save();
-      ctx.translate(px, py);
-      ctx.rotate(-0.42);
-      ctx.strokeStyle = "rgba(227,184,85,0.42)";
-      ctx.lineWidth = R * 0.15;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, R * 1.85, R * 0.5, 0, Math.PI * 0.02, Math.PI * 0.98);
-      ctx.stroke();
-      ctx.restore();
-
-      // moon
-      const ma = t * 0.00012;
-      const mx = px + Math.cos(ma) * R * 2.5;
-      const my = py - R * 1.15 + Math.sin(ma) * R * 0.85;
-      ctx.beginPath();
-      ctx.arc(mx, my, Math.max(2.5, R * 0.055), 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(200,205,214,0.7)";
+      ctx.arc(-5, -6, 1.8, 0, Math.PI * 2);
       ctx.fill();
+      ctx.beginPath();
+      ctx.arc(5, -6, 1.8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(20,10,30,0.85)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(0, -1, 2.5, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+      ctx.strokeStyle = "rgba(170,130,225,0.4)";
+      ctx.lineWidth = 1.4;
+      for (let k = -2; k <= 2; k++) {
+        ctx.beginPath();
+        ctx.moveTo(k * 7, 6);
+        const sway = Math.sin(t * 0.002 + k) * 5;
+        ctx.quadraticCurveTo(k * 7 + sway, 20, k * 7 + sway * 1.6, 34);
+        ctx.stroke();
+      }
+      ctx.restore();
     };
 
-    const drawMothership = (x: number, y: number, warp: number, t: number) => {
+    const drawStation = (x: number, y: number, t: number) => {
       ctx.save();
+      ctx.translate(x, y);
+      ctx.globalAlpha = 0.55;
+      const rot = t * 0.0004;
+      ctx.strokeStyle = "rgba(155,163,174,0.7)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(0, 0, 6, 0, Math.PI * 2);
+      ctx.stroke();
+      for (let i = 0; i < 4; i++) {
+        const a = rot + (i * Math.PI) / 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * 6, Math.sin(a) * 6);
+        ctx.lineTo(Math.cos(a) * 24, Math.sin(a) * 24);
+        ctx.stroke();
+      }
+      const lit = Math.floor(t / 700) % 2 === 0;
+      ctx.fillStyle = lit ? "rgba(240,212,138,0.95)" : "rgba(240,212,138,0.25)";
+      ctx.beginPath();
+      ctx.arc(Math.cos(rot) * 24, Math.sin(rot) * 24, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    };
+
+    const drawMothership = (x: number, y: number, warp: number, t: number, alpha = 1) => {
+      ctx.save();
+      ctx.globalAlpha = alpha;
       ctx.translate(x, y);
       ctx.scale(shipScale, shipScale);
 
@@ -346,6 +568,29 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
       ctx.restore();
     };
 
+    const drawEscorts = (shipX: number, shipY: number, lt: number, alpha: number) => {
+      if (alpha <= 0.01) return;
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      for (let i = 0; i < 3; i++) {
+        const a = lt * 1.1 + i * ((Math.PI * 2) / 3);
+        const ex = shipX + Math.cos(a) * 105 * shipScale;
+        const ey = shipY + Math.sin(a) * 26 * shipScale;
+        ctx.save();
+        ctx.translate(ex, ey);
+        ctx.rotate(a + Math.PI / 2);
+        ctx.fillStyle = "rgba(240,212,138,0.85)";
+        ctx.beginPath();
+        ctx.moveTo(7, 0);
+        ctx.lineTo(-5, 3.4);
+        ctx.lineTo(-5, -3.4);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+      }
+      ctx.restore();
+    };
+
     const drawSaucer = (x: number, y: number, k: number, t: number) => {
       ctx.save();
       ctx.translate(x, y);
@@ -411,16 +656,49 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
       ctx.strokeStyle = "rgba(126,222,190,0.35)";
       ctx.lineWidth = 1.2;
       ctx.stroke();
-      drawAlien(p.x, p.y + 1, p.r * 0.62);
+      drawAlien(p.x, p.y + 1, p.r * 0.62, p.tone);
+    };
+
+    const drawWormhole = (t: number, lt: number) => {
+      const inten = wormholeAt(lt);
+      ctx.save();
+      ctx.globalAlpha = 0.35 + inten * 0.65;
+      ctx.translate(wormX, parkY);
+      const grad = ctx.createRadialGradient(0, 0, 4, 0, 0, 46);
+      grad.addColorStop(0, "rgba(2,6,5,0.95)");
+      grad.addColorStop(0.6, `rgba(14,34,30,${0.5 + inten * 0.4})`);
+      grad.addColorStop(1, "rgba(126,222,190,0)");
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(0, 0, 46, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = `rgba(126,222,190,${0.5 + inten * 0.5})`;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([9, 13]);
+      ctx.lineDashOffset = -t * 0.05;
+      ctx.beginPath();
+      ctx.arc(0, 0, 46, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.strokeStyle = `rgba(240,212,138,${0.35 + inten * 0.5})`;
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([5, 9]);
+      ctx.lineDashOffset = t * 0.04;
+      ctx.beginPath();
+      ctx.arc(0, 0, 36, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
     };
 
     /* ── choreography ── */
 
-    const shipState = (lt: number): { x: number; y: number; warp: number; on: boolean } => {
-      if (lt < PHASES[1]) return { x: 0, y: 0, warp: 0, on: false };
+    const shipState = (
+      lt: number,
+    ): { x: number; y: number; warp: number; on: boolean; alpha: number } => {
+      if (lt < PHASES[1]) return { x: 0, y: 0, warp: 0, on: false, alpha: 1 };
       if (lt < 7.6) {
         const k = easeOutCubic((lt - 5) / 2.6);
-        return { x: -240 + k * (parkX + 240), y: parkY, warp: 1.1, on: true };
+        return { x: -240 + k * (parkX + 240), y: parkY, warp: 1.1, on: true, alpha: 1 };
       }
       if (lt < 21) {
         return {
@@ -428,13 +706,17 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
           y: parkY + Math.sin(lt * 1.1) * 5,
           warp: 0.2,
           on: true,
+          alpha: 1,
         };
       }
-      if (lt < 23.4) {
-        const k = easeInCubic((lt - 21) / 2.4);
-        return { x: parkX + k * (w - parkX + 320), y: parkY, warp: 1.6, on: true };
+      if (lt < 23) {
+        // dive into the wormhole
+        const k = easeInCubic((lt - 21) / 2);
+        const target = wormX + 60;
+        const alpha = lt > 22.4 ? clamp(1 - (lt - 22.4) / 0.6, 0, 1) : 1;
+        return { x: parkX + k * (target - parkX), y: parkY, warp: 1.6, on: true, alpha };
       }
-      return { x: 0, y: 0, warp: 0, on: false };
+      return { x: 0, y: 0, warp: 0, on: false, alpha: 1 };
     };
 
     const saucerState = (lt: number): { x: number; y: number; k: number } | null => {
@@ -443,10 +725,50 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
       return { x: w + 80 - k * (w + 160), y: h * 0.34 + Math.sin(k * Math.PI * 2.2) * h * 0.05, k };
     };
 
+    const jellyState = (lt: number): { x: number; y: number; alpha: number } => {
+      const x = w * (0.06 + (lt / LOOP) * 0.88);
+      const y = h * 0.26 + Math.sin(lt * 1.3) * 14;
+      const edge = Math.min(1, lt / 2, (LOOP - lt) / 2);
+      return { x, y, alpha: clamp(edge, 0, 1) * 0.75 };
+    };
+
     const draw = (t: number, lt: number, dt: number) => {
       ctx.clearRect(0, 0, w, h);
 
-      // warp starfield
+      // ── deep sky (pre-rendered sprites) ──
+      if (galaxySprite) {
+        const gx = w * 0.13;
+        const gy = h * 0.2;
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        ctx.translate(gx, gy);
+        ctx.rotate(lt * 0.018);
+        ctx.drawImage(galaxySprite, -galaxySize / 2, -galaxySize / 2, galaxySize, galaxySize);
+        ctx.restore();
+      }
+      if (holeSprite) {
+        ctx.save();
+        ctx.globalAlpha = 0.65;
+        ctx.drawImage(holeSprite, w * 0.1 - holeSize / 2, h * 0.8 - holeSize / 2, holeSize, holeSize);
+        ctx.restore();
+      }
+      if (planetSprite) {
+        const px = Math.min(w * 0.82, w - planetR * 1.15);
+        const py = Math.max(h * 0.14, planetR * 0.9);
+        ctx.save();
+        ctx.globalAlpha = 0.95;
+        ctx.drawImage(planetSprite, px - planetW / 2, py - planetW / 2, planetW, planetW);
+        ctx.restore();
+        // moon
+        const ma = t * 0.00012;
+        ctx.beginPath();
+        ctx.arc(px + Math.cos(ma) * planetR * 2.5, py - planetR * 1.15 + Math.sin(ma) * planetR * 0.85, Math.max(2.5, planetR * 0.055), 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(200,205,214,0.7)";
+        ctx.fill();
+      }
+      drawStation(w * 0.7, h * 0.74, t);
+
+      // ── warp starfield ──
       const boost = boostAt(lt);
       const speed = (0.05 + boost * 0.55) * dt;
       ctx.lineCap = "round";
@@ -471,7 +793,7 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
         ctx.stroke();
       }
 
-      // comets
+      // ── comets ──
       for (const m of comets) {
         m.life += dt;
         m.x += m.vx * dt * 60;
@@ -489,9 +811,7 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
         ctx.lineTo(m.x, m.y);
         ctx.stroke();
       }
-      comets = comets.filter(
-        (m) => m.life < m.max && m.x > -80 && m.x < w + 80 && m.y < h + 80,
-      );
+      comets = comets.filter((m) => m.life < m.max && m.x > -80 && m.x < w + 80 && m.y < h + 80);
       if (t > nextCometAt) {
         const fromLeft = Math.random() > 0.5;
         const sp = 6 + Math.random() * 4;
@@ -507,9 +827,39 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
         nextCometAt = t + 5000 + Math.random() * 7000;
       }
 
-      drawPlanet(t);
+      // ── asteroid belt ──
+      for (const a of asteroids) {
+        a.x += a.vx * dt * 60;
+        a.y += a.vy * dt * 60;
+        a.rot += a.vr;
+        if (a.y > h + 24) {
+          a.y = -24;
+          a.x = Math.random() * w;
+        }
+        if (a.x < -24) a.x = w + 24;
+        if (a.x > w + 24) a.x = -24;
+        ctx.save();
+        ctx.translate(a.x, a.y);
+        ctx.rotate(a.rot);
+        ctx.beginPath();
+        for (let i = 0; i < a.pts.length; i++) {
+          const ang = (i / a.pts.length) * Math.PI * 2;
+          const rr = a.pts[i];
+          const px2 = Math.cos(ang) * rr;
+          const py2 = Math.sin(ang) * rr;
+          if (i === 0) ctx.moveTo(px2, py2);
+          else ctx.lineTo(px2, py2);
+        }
+        ctx.closePath();
+        ctx.fillStyle = "rgba(42,44,51,0.9)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(155,163,174,0.4)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+      }
 
-      // alien pods
+      // ── alien pods ──
       for (const p of pods) {
         p.y += p.vy * dt * 60;
         p.x += Math.sin(t * 0.0006 + p.ph) * 0.2;
@@ -520,15 +870,25 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
         drawPod(p);
       }
 
-      // saucer flyby
+      // ── jellyfish ambassador ──
+      const jelly = jellyState(lt);
+      drawJelly(jelly.x, jelly.y, t, jelly.alpha);
+
+      // ── wormhole (behind the ship so it dives in) ──
+      drawWormhole(t, lt);
+
+      // ── saucer flyby ──
       const saucer = saucerState(lt);
       if (saucer) drawSaucer(saucer.x, saucer.y, saucer.k, t);
 
-      // mothership
+      // ── mothership + escorts ──
       const ship = shipState(lt);
-      if (ship.on) drawMothership(ship.x, ship.y, ship.warp, t);
+      if (ship.on) {
+        drawEscorts(ship.x, ship.y, lt, ship.alpha);
+        drawMothership(ship.x, ship.y, ship.warp, t, ship.alpha);
+      }
 
-      // warp-burst flash
+      // ── warp-burst flash ──
       if (lt >= 21 && lt < 22.8) {
         const a = Math.sin(clamp((lt - 21) / 1.2, 0, 1) * Math.PI) * 0.14;
         ctx.fillStyle = `rgba(247,231,176,${a})`;
@@ -539,6 +899,26 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
     /** Static composed frame for prefers-reduced-motion. */
     const drawStatic = () => {
       ctx.clearRect(0, 0, w, h);
+      if (galaxySprite) {
+        ctx.save();
+        ctx.globalAlpha = 0.6;
+        ctx.translate(w * 0.13, h * 0.2);
+        ctx.rotate(0.3);
+        ctx.drawImage(galaxySprite, -galaxySize / 2, -galaxySize / 2, galaxySize, galaxySize);
+        ctx.restore();
+      }
+      if (holeSprite) {
+        ctx.save();
+        ctx.globalAlpha = 0.65;
+        ctx.drawImage(holeSprite, w * 0.1 - holeSize / 2, h * 0.8 - holeSize / 2, holeSize, holeSize);
+        ctx.restore();
+      }
+      if (planetSprite) {
+        const px = Math.min(w * 0.82, w - planetR * 1.15);
+        const py = Math.max(h * 0.14, planetR * 0.9);
+        ctx.drawImage(planetSprite, px - planetW / 2, py - planetW / 2, planetW, planetW);
+      }
+      drawStation(w * 0.7, h * 0.74, 0);
       for (const s of stars) {
         const k = 0.92;
         const x = cx + (s.x / s.z) * scale * k;
@@ -547,9 +927,29 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
         ctx.fillStyle = `rgba(${s.c},${0.2 + depth * 0.75})`;
         ctx.fillRect(x, y, 1.4, 1.4);
       }
-      drawPlanet(0);
-      drawSaucer(w * 0.74, h * 0.3, 0.4, 0);
-      drawPod(pods[0] ?? { x: w * 0.1, y: h * 0.62, r: 15, vy: 0, ph: 0 });
+      for (const a of asteroids) {
+        ctx.save();
+        ctx.translate(a.x, a.y);
+        ctx.rotate(a.rot);
+        ctx.beginPath();
+        for (let i = 0; i < a.pts.length; i++) {
+          const ang = (i / a.pts.length) * Math.PI * 2;
+          if (i === 0) ctx.moveTo(Math.cos(ang) * a.pts[i], Math.sin(ang) * a.pts[i]);
+          else ctx.lineTo(Math.cos(ang) * a.pts[i], Math.sin(ang) * a.pts[i]);
+        }
+        ctx.closePath();
+        ctx.fillStyle = "rgba(42,44,51,0.9)";
+        ctx.fill();
+        ctx.strokeStyle = "rgba(155,163,174,0.4)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.restore();
+      }
+      for (const p of pods) drawPod(p);
+      drawJelly(w * 0.4, h * 0.26, 0, 0.6);
+      drawWormhole(0, 16);
+      drawSaucer(w * 0.74, h * 0.42, 0.4, 0);
+      drawEscorts(parkX, parkY, 0.8, 1);
       drawMothership(parkX, parkY, 0.2, 0);
     };
 
@@ -631,13 +1031,7 @@ const NexusCosmos = memo(function NexusCosmos({ onPhase }: { onPhase: (i: number
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      className="absolute inset-0 h-full w-full"
-      aria-hidden="true"
-    />
-  );
+  return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" aria-hidden="true" />;
 });
 
 /* ── decorative ticking coordinates (isolated so the section never re-renders) ── */
@@ -669,7 +1063,7 @@ export function NexusTrailer() {
 
   return (
     <section
-      className="relative flex min-h-[92svh] flex-col overflow-hidden"
+      className="relative flex min-h-[100svh] flex-col overflow-hidden"
       aria-label="TEKA Nexus — deep space transmission"
     >
       {/* deep-space nebula wash (CSS only, GPU cheap) */}
@@ -678,7 +1072,7 @@ export function NexusTrailer() {
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(ellipse 55% 42% at 18% 24%, rgba(227,184,85,0.07), transparent 70%), radial-gradient(ellipse 48% 40% at 82% 76%, rgba(126,222,190,0.05), transparent 72%), #050506",
+            "radial-gradient(ellipse 55% 42% at 18% 24%, rgba(227,184,85,0.07), transparent 70%), radial-gradient(ellipse 48% 40% at 82% 76%, rgba(126,222,190,0.05), transparent 72%), #050505",
         }}
       />
 
@@ -719,37 +1113,44 @@ export function NexusTrailer() {
       </div>
 
       {/* main content */}
-      <div className="relative z-10 mx-auto flex w-full max-w-5xl flex-1 flex-col items-center justify-center px-4 py-16 text-center sm:px-6">
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center px-4 py-16 text-center sm:px-6">
         <motion.div
           initial={{ opacity: 0, y: 22 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-80px" }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="flex flex-col items-center"
+          className="flex w-full flex-col items-center"
         >
           {/* status badges */}
           <div className="flex flex-wrap items-center justify-center gap-2.5">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-400/30 bg-emerald-400/[0.07] px-3.5 py-1">
+            <span className="glass-gold inline-flex items-center gap-2 rounded-full px-3.5 py-1">
               <span className="relative flex h-2 w-2">
                 <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-60 pulse-dot" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
               </span>
               <span className="mono-label text-emerald-300">Live Product</span>
             </span>
-            <span className="mono-label text-muted-foreground/60">Node NEXUS-01 // Mothership</span>
+            <span className="glass inline-flex items-center rounded-full px-3.5 py-1">
+              <span className="mono-label text-muted-foreground">Node NEXUS-01 // Mothership</span>
+            </span>
           </div>
+
+          {/* system check line */}
+          <p className="mono-label mt-3 text-muted-foreground/70">
+            warp drive ✓ · life support ✓ · unlimited curiosity ✓
+          </p>
 
           {/* Persian name */}
           <p
             dir="rtl"
             lang="fa"
-            className="mt-6 font-display text-base font-medium tracking-[0.3em] text-gold/70"
+            className="mt-6 font-display text-base font-medium tracking-[0.3em] text-gold/70 sm:text-lg"
           >
             {NEXUS.nativeName}
           </p>
 
-          {/* the big one */}
-          <h2 className="gold-text mt-2 font-display text-[17vw] font-bold leading-[0.95] tracking-tight sm:text-8xl lg:text-9xl">
+          {/* the big one — galactic scale */}
+          <h2 className="gold-text mt-1 w-full font-display text-[18.5vw] font-bold leading-[0.92] tracking-tight sm:text-[9rem] lg:text-[11rem]">
             TEKA NEXUS
           </h2>
 
@@ -761,25 +1162,31 @@ export function NexusTrailer() {
             {NEXUS.description}
           </p>
 
-          {/* synced cinematic caption */}
-          <div className="mt-6 flex min-h-[3.5rem] items-center justify-center" aria-live="off">
+          {/* synced cinematic caption in a glass strip */}
+          <div className="mt-6 flex min-h-[4rem] items-center justify-center" aria-live="off">
             <AnimatePresence mode="wait">
-              <motion.p
+              <motion.div
                 key={shownPhase}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.45, ease: "easeOut" }}
-                className="max-w-xl font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-gold-bright/90 sm:text-xs"
+                className="glass relative rounded-2xl px-5 py-3"
               >
-                {PHASE_CAPTIONS[shownPhase]}
-              </motion.p>
+                <span className="absolute left-2 top-2 h-2 w-2 border-l border-t border-gold/50" aria-hidden />
+                <span className="absolute right-2 top-2 h-2 w-2 border-r border-t border-gold/50" aria-hidden />
+                <span className="absolute bottom-2 left-2 h-2 w-2 border-b border-l border-gold/50" aria-hidden />
+                <span className="absolute bottom-2 right-2 h-2 w-2 border-b border-r border-gold/50" aria-hidden />
+                <p className="max-w-xl text-balance font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-gold-bright/90 sm:text-xs">
+                  {PHASE_CAPTIONS[shownPhase]}
+                </p>
+              </motion.div>
             </AnimatePresence>
           </div>
 
           {/* features */}
           <ul
-            className="mx-auto mt-6 grid w-full max-w-3xl grid-cols-2 gap-2.5 sm:grid-cols-3"
+            className="mx-auto mt-7 grid w-full max-w-3xl grid-cols-1 gap-2.5 sm:grid-cols-3"
             aria-label="TEKA Nexus features"
           >
             {NEXUS.features.map((feature, i) => {
@@ -791,36 +1198,79 @@ export function NexusTrailer() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-40px" }}
                   transition={{ delay: 0.05 * i, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                  className="glass-gold flex min-h-[44px] items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-medium text-gold-bright/90 sm:text-[13px]"
+                  className="glass group/chip relative flex min-h-[48px] items-center gap-3 overflow-hidden rounded-xl px-3.5 py-2.5 transition-colors duration-300 hover:border-gold/40"
                 >
-                  <Icon className="h-4 w-4 shrink-0 text-gold" aria-hidden />
-                  {feature}
+                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-md border border-gold/25 bg-gold/10">
+                    <Icon className="h-3.5 w-3.5 text-gold" aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1 text-left text-xs font-medium text-foreground/90 sm:text-[13px]">
+                    {feature}
+                  </span>
+                  <span className="mono-label shrink-0 text-muted-foreground/50">
+                    SYS-0{i + 1}
+                  </span>
+                  {/* holographic sweep */}
+                  <span
+                    className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.06] to-transparent transition-transform duration-700 group-hover/chip:translate-x-full"
+                    aria-hidden="true"
+                  />
                 </motion.li>
               );
             })}
           </ul>
 
-          {/* CTA */}
+          {/* CTA — the boarding pass */}
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.15, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="mt-9 flex flex-col items-center gap-3"
+            className="mt-10 flex w-full flex-col items-center gap-4"
           >
             <a
               href={NEXUS.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group relative inline-flex min-h-[52px] items-center gap-2.5 rounded-full bg-gradient-to-r from-gold-deep via-gold to-gold-bright px-8 py-3.5 text-sm font-semibold text-black shadow-[0_0_46px_-8px_rgba(227,184,85,0.6)] transition-transform duration-300 hover:scale-[1.045] active:scale-[0.97] sm:text-base"
+              className="glass-gold group relative block w-full max-w-md overflow-hidden rounded-2xl shadow-[0_0_60px_-16px_rgba(227,184,85,0.55)] transition-all duration-300 hover:border-gold/60 hover:shadow-[0_0_80px_-14px_rgba(227,184,85,0.7)] active:scale-[0.98]"
               aria-label={`Open ${NEXUS.name} — the TEKA academy (new tab)`}
             >
-              <Rocket className="h-5 w-5 transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" aria-hidden />
-              Board The Nexus
-              <ArrowUpRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" aria-hidden />
+              <div className="flex">
+                {/* gold stub */}
+                <div className="relative grid w-16 shrink-0 place-items-center border-r border-dashed border-black/40 bg-gradient-to-b from-gold-deep via-gold to-gold-bright">
+                  <span className="-rotate-90 whitespace-nowrap font-mono text-[10px] font-bold tracking-[0.35em] text-black">
+                    NEXUS-01
+                  </span>
+                </div>
+                {/* main panel */}
+                <div className="min-w-0 flex-1 px-5 py-4 text-left">
+                  <p className="mono-label flex items-center gap-2 text-muted-foreground">
+                    <Ticket className="h-3.5 w-3.5 text-gold" aria-hidden />
+                    Boarding Pass · Gate 42
+                  </p>
+                  <p className="mt-1.5 font-display text-lg font-semibold text-foreground">
+                    PASSENGER: <span className="gold-text">YOU</span>
+                  </p>
+                  <div className="mt-2.5 flex items-center justify-between gap-3">
+                    <span className="truncate font-mono text-[10px] tracking-[0.14em] text-muted-foreground">
+                      DEST: TEKA-NEXUS.VERCEL.APP
+                    </span>
+                    <span className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-gold/30 bg-gold/15 px-3.5 py-1.5 text-xs font-semibold text-gold-bright transition-transform duration-300 group-hover:scale-105">
+                      Board
+                      <ArrowUpRight className="h-3.5 w-3.5" aria-hidden />
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* punch-hole perforations */}
+              <span className="absolute left-16 top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold/20 bg-[#050505]" aria-hidden="true" />
+              {/* holographic sweep */}
+              <span
+                className="pointer-events-none absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/[0.08] to-transparent transition-transform duration-1000 group-hover:translate-x-full"
+                aria-hidden="true"
+              />
             </a>
             <span className="font-mono text-[11px] tracking-[0.18em] text-muted-foreground/80">
-              teka-nexus.vercel.app · free forever
+              free forever · no fees · no catch
             </span>
           </motion.div>
         </motion.div>
